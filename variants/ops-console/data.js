@@ -1,7 +1,7 @@
 /* 与其他变体同一批公司内部任务：审阅、用印、巡检、上市、售后、周行动、对账 */
 window.DISPATCH = {
   company: "华东零售",
-  boardTitle: "调度台",
+  boardTitle: "运营桌面",
   timezone: "CST",
   now: "2026-08-18T09:42:00+08:00",
   viewer: { id: "zhouqi", name: "周琪", role: "运营办", initials: "周" },

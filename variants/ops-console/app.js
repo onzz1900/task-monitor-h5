@@ -1,5 +1,5 @@
 (function () {
-  const data = window.DISPATCH;
+  const data = window.OPS_DESKTOP;
   if (!data || !Array.isArray(data.tasks) || !data.tasks.length) return;
 
   const now = new Date(data.now);

@@ -6,4 +6,4 @@
 
 | Variant | Path | Preview |
 | --- | --- | --- |
-| Dense Operations Console | [`variants/ops-console/`](variants/ops-console/) | Serve the repo (or that folder) and open `/variants/ops-console/` (or `/` if serving the folder). Example: `python3 -m http.server 4173` → http://localhost:4173/variants/ops-console/ |
+| 运营桌面 (Operating Desktop) | [`variants/ops-console/`](variants/ops-console/) | Serve the repo (or that folder) and open `/variants/ops-console/` (or `/` if serving the folder). Example: `python3 -m http.server 4173` → http://localhost:4173/variants/ops-console/ |
