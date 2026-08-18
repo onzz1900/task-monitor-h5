@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f4f3ef" />
+  <title>任务跟踪</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="header-top">
+        <div>
+          <h1>任务跟踪</h1>
+          <p class="lede">公司内部流转与跟进</p>
+        </div>
+        <time id="today" class="today"></time>
+      </div>
+
+      <dl class="stats" id="stats"></dl>
+    </header>
+
+    <main>
+      <div class="list-head" aria-hidden="true">
+        <span>名称</span>
+        <span>状态</span>
+        <span>当前动作 / 负责人</span>
+        <span>下次流转</span>
+      </div>
+      <ul class="tasks" id="tasks"></ul>
+    </main>
+  </div>
+
+  <script>
+    const FOLLOW_STATUSES = ["流转中", "待跟进", "已阻塞", "等待中"];
+
+    const TASKS = [
+      {
+        name: "华东大客户季度复盘",
+        status: "进行中",
+        action: "李敏整理会议纪要待确认",
+        next: "今天 10:30",
+        result: "客户已确认本季续约意向",
+        meeting: "today",
+      },
+      {
+        name: "供应商合同用印",
+        status: "流转中",
+        action: "法务张凯审批中",
+        next: "今天 14:00",
+        result: "商务条款已核过，待用法务审",
+        meeting: "week",
+      },
+      {
+        name: "南京新街口店巡检整改",
+        status: "待跟进",
+        action: "店长回传整改照片",
+        next: "明天 09:00",
+        result: "陈列与消防各有 2 项待改",
+        meeting: "week",
+      },
+      {
+        name: "新品上市排期对齐",
+        status: "进行中",
+        action: "运营王倩约齐渠道会",
+        next: "今天 16:30",
+        result: "电商档期已锁 9 月 8 日",
+        meeting: "today",
+      },
+      {
+        name: "售后升级单 #4821",
+        status: "已阻塞",
+        action: "等质检给出责任判定",
+        next: "明天 11:00",
+        result: "客服已升级至质量部",
+        meeting: null,
+      },
+      {
+        name: "周例会行动项回收",
+        status: "已完成",
+        action: "周琪已关闭 7 项行动项",
+        next: "已结束",
+        result: "",
+        meeting: "week",
+      },
+      {
+        name: "渠道费用对账 8 月",
+        status: "等待中",
+        action: "财务待回传差异表",
+        next: "周四 15:00",
+        result: "已对上 6 家，差 2 家未回",
+        meeting: null,
+      },
+    ];
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function computeStats(tasks) {
+      return {
+        todayMeetings: tasks.filter(function (t) { return t.meeting === "today"; }).length,
+        weekMeetings: tasks.filter(function (t) { return t.meeting === "today" || t.meeting === "week"; }).length,
+        followUps: tasks.filter(function (t) { return FOLLOW_STATUSES.indexOf(t.status) !== -1; }).length,
+        done: tasks.filter(function (t) { return t.status === "已完成"; }).length,
+      };
+    }
+
+    function renderStats(stats) {
+      var items = [
+        { label: "今日会议", value: stats.todayMeetings },
+        { label: "本周会议", value: stats.weekMeetings },
+        { label: "待跟进", value: stats.followUps },
+        { label: "已完成", value: stats.done },
+      ];
+      return items.map(function (item) {
+        return (
+          "<div class=\"stat\">" +
+            "<dt>" + item.label + "</dt>" +
+            "<dd>" + item.value + "</dd>" +
+          "</div>"
+        );
+      }).join("");
+    }
+
+    function renderTask(task) {
+      var ended = task.status === "已完成";
+      var result = task.result
+        ? "<p class=\"result\">" + escapeHtml(task.result) + "</p>"
+        : "";
+      return (
+        "<li class=\"task" + (ended ? " is-done" : "") + "\">" +
+          "<div class=\"col-name\">" +
+            "<h2 class=\"name\">" + escapeHtml(task.name) + "</h2>" +
+          "</div>" +
+          "<p class=\"status\">" + escapeHtml(task.status) + "</p>" +
+          "<div class=\"col-action\">" +
+            "<p class=\"action\">" + escapeHtml(task.action) + "</p>" +
+            result +
+          "</div>" +
+          "<p class=\"next" + (ended ? " is-ended" : "") + "\">" +
+            "<span class=\"next-label\">下次流转</span>" +
+            "<span class=\"next-time\">" + escapeHtml(task.next) + "</span>" +
+          "</p>" +
+        "</li>"
+      );
+    }
+
+    function formatToday(date) {
+      return new Intl.DateTimeFormat("zh-CN", {
+        timeZone: "Asia/Shanghai",
+        month: "numeric",
+        day: "numeric",
+        weekday: "long",
+      }).format(date);
+    }
+
+    var now = new Date();
+    var todayEl = document.getElementById("today");
+    todayEl.textContent = formatToday(now);
+    todayEl.dateTime = now.toISOString();
+
+    document.getElementById("stats").innerHTML = renderStats(computeStats(TASKS));
+    document.getElementById("tasks").innerHTML = TASKS.map(renderTask).join("");
+  </script>
+</body>
+</html>
