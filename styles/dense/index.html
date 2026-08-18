@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light" />
   <title>任务指挥台 · 华章实业</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -23,7 +24,7 @@
     </header>
 
     <section class="stats" aria-label="会议统计">
-      <h2 class="sr-only">会议统计</h2>
+      <h2>会议<br />统计</h2>
       <ul>
         <li>
           <span class="stat-k">今日会议</span>
@@ -45,7 +46,7 @@
     </section>
 
     <section class="board" aria-label="任务列表">
-      <div class="board-head" aria-hidden="true">
+      <div class="board-head">
         <span class="c-name">任务</span>
         <span class="c-status">状态</span>
         <span class="c-owner">负责人</span>
@@ -57,43 +58,64 @@
           <span class="c-name">华东大客户季度复盘</span>
           <span class="c-status st-run">进行中</span>
           <span class="c-owner">李敏</span>
-          <time class="c-time" datetime="2026-08-18T10:30">今天 10:30</time>
+          <time class="c-time" datetime="2026-08-18T10:30">
+            <span class="when">今天</span>
+            <span class="hhmm">10:30</span>
+          </time>
         </li>
         <li class="row">
           <span class="c-name">供应商合同用印</span>
           <span class="c-status st-flow">流转中</span>
           <span class="c-owner">张凯</span>
-          <time class="c-time" datetime="2026-08-18T14:00">今天 14:00</time>
+          <time class="c-time" datetime="2026-08-18T14:00">
+            <span class="when">今天</span>
+            <span class="hhmm">14:00</span>
+          </time>
         </li>
         <li class="row">
           <span class="c-name">南京新街口店巡检整改</span>
           <span class="c-status st-follow">待跟进</span>
           <span class="c-owner">店长</span>
-          <time class="c-time" datetime="2026-08-19T09:00">明天 09:00</time>
+          <time class="c-time" datetime="2026-08-19T09:00">
+            <span class="when">明天</span>
+            <span class="hhmm">09:00</span>
+          </time>
         </li>
         <li class="row">
           <span class="c-name">新品上市排期对齐</span>
           <span class="c-status st-run">进行中</span>
           <span class="c-owner">王倩</span>
-          <time class="c-time" datetime="2026-08-18T16:30">今天 16:30</time>
+          <time class="c-time" datetime="2026-08-18T16:30">
+            <span class="when">今天</span>
+            <span class="hhmm">16:30</span>
+          </time>
         </li>
         <li class="row">
           <span class="c-name">售后升级单 #4821</span>
           <span class="c-status st-block">已阻塞</span>
           <span class="c-owner">质检</span>
-          <time class="c-time" datetime="2026-08-19T11:00">明天 11:00</time>
+          <time class="c-time" datetime="2026-08-19T11:00">
+            <span class="when">明天</span>
+            <span class="hhmm">11:00</span>
+          </time>
         </li>
         <li class="row is-done">
           <span class="c-name">周例会行动项回收</span>
           <span class="c-status st-done">已完成</span>
           <span class="c-owner">周琪</span>
-          <time class="c-time is-ended" datetime="2026-08-18">已结束</time>
+          <time class="c-time is-ended" datetime="2026-08-18">
+            <span class="when">完结</span>
+            <span class="hhmm">已结束</span>
+          </time>
         </li>
         <li class="row">
           <span class="c-name">渠道费用对账 8 月</span>
           <span class="c-status st-wait">等待中</span>
           <span class="c-owner">财务</span>
-          <time class="c-time" datetime="2026-08-20T15:00">周四 15:00</time>
+          <time class="c-time" datetime="2026-08-20T15:00">
+            <span class="when">周四</span>
+            <span class="hhmm">15:00</span>
+          </time>
         </li>
       </ol>
     </section>
