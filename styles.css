@@ -1,0 +1,259 @@
+:root {
+  --bg: #f4f3ef;
+  --ink: #1c1b18;
+  --ink-2: #3f3d37;
+  --quiet: #6d6a62;
+  --muted: #8a867c;
+  --line: #e4e1d8;
+  --accent: #25415c;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+    "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei",
+    system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.page {
+  width: min(100%, 920px);
+  margin: 0 auto;
+  padding: 28px 20px 48px;
+  padding-top: calc(28px + env(safe-area-inset-top));
+  padding-bottom: calc(48px + env(safe-area-inset-bottom));
+}
+
+.header-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+h1 {
+  font-size: 28px;
+  font-weight: 620;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+}
+
+.lede {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--quiet);
+}
+
+.today {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px 12px;
+  margin-top: 36px;
+  padding: 4px 0 8px;
+}
+
+.stat dt {
+  font-size: 12px;
+  color: var(--quiet);
+  letter-spacing: 0.02em;
+}
+
+.stat dd {
+  margin-top: 6px;
+  font-size: 34px;
+  font-weight: 560;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.list-head {
+  display: none;
+}
+
+.tasks {
+  list-style: none;
+  margin-top: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.task {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "name status"
+    "action action"
+    "next next";
+  gap: 6px 16px;
+  padding: 22px 0 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.col-name { grid-area: name; }
+.status { grid-area: status; }
+.col-action { grid-area: action; }
+.next { grid-area: next; }
+
+.name {
+  font-size: 16px;
+  font-weight: 560;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+}
+
+.status {
+  font-size: 13px;
+  color: var(--quiet);
+  text-align: right;
+  align-self: start;
+  padding-top: 2px;
+}
+
+.action {
+  font-size: 14px;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+
+.result {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.next {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.next-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.next-time {
+  font-size: 15px;
+  font-weight: 560;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+}
+
+.next.is-ended .next-time,
+.task.is-done .next-time {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.task.is-done .name,
+.task.is-done .action {
+  color: var(--ink-2);
+}
+
+@media (min-width: 760px) {
+  .page {
+    padding: 48px 32px 72px;
+  }
+
+  h1 {
+    font-size: 32px;
+  }
+
+  .stats {
+    margin-top: 44px;
+    gap: 24px;
+  }
+
+  .stat dd {
+    font-size: 40px;
+  }
+
+  .list-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) 72px minmax(0, 1.55fr) 118px;
+    gap: 16px 20px;
+    margin-top: 40px;
+    padding: 0 0 10px;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
+  .tasks {
+    margin-top: 0;
+    border-top: 0;
+  }
+
+  .task {
+    grid-template-columns: minmax(0, 1.35fr) 72px minmax(0, 1.55fr) 118px;
+    grid-template-areas: none;
+    align-items: start;
+    gap: 8px 20px;
+    padding: 20px 0 18px;
+  }
+
+  .col-name,
+  .status,
+  .col-action,
+  .next {
+    grid-area: auto;
+  }
+
+  .name {
+    font-size: 15px;
+  }
+
+  .status {
+    text-align: left;
+    padding-top: 1px;
+  }
+
+  .action {
+    font-size: 14px;
+  }
+
+  .next {
+    display: block;
+    margin-top: 0;
+    text-align: right;
+  }
+
+  .next-label {
+    display: none;
+  }
+
+  .next-time {
+    font-size: 14px;
+  }
+}
