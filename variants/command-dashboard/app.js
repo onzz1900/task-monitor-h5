@@ -240,6 +240,7 @@ const WEEK_MEETINGS = [
 const FILTERS = [
   { id: "all", label: "All" },
   { id: "live", label: "In motion" },
+  { id: "risk", label: "Risk" },
   { id: "blocked", label: "Blocked" },
   { id: "overdue", label: "Overdue" },
   { id: "done", label: "Done" },
@@ -301,6 +302,7 @@ function initials(name) {
 function matchesFilter(task) {
   if (state.filter === "all") return true;
   if (state.filter === "live") return task.status === "progress" || task.status === "pending";
+  if (state.filter === "risk") return task.status === "blocked" || task.status === "overdue";
   return task.status === state.filter;
 }
 
@@ -355,6 +357,14 @@ function renderMosaic() {
       `
     )
     .join("");
+
+  $("strip").innerHTML = `
+    <button type="button" data-filter="all"><b>${s.todayMeetings}</b><span>Today</span></button>
+    <button type="button"><b>${s.weekMeetings}</b><span>Week</span></button>
+    <button type="button" data-filter="live"><b>${s.pending + s.progress}</b><span>Live</span></button>
+    <button type="button" data-filter="done"><b>${s.done}</b><span>Done</span></button>
+    <button type="button" class="risk" data-filter="risk"><b>${s.overdue.length + s.blocked.length}</b><span>Risk</span></button>
+  `;
 
   $("mosaic").innerHTML = `
     <article class="module today">
@@ -455,6 +465,9 @@ function renderFilters() {
       </button>
     `
   ).join("");
+  document.querySelectorAll(".strip [data-filter]").forEach((btn) => {
+    btn.setAttribute("aria-pressed", String(btn.dataset.filter === state.filter));
+  });
 }
 
 function renderTasks() {
