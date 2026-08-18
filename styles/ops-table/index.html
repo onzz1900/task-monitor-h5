@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>运营工作台 · 会议与任务流转</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="masthead">
+      <div class="masthead-left">
+        <p class="eyebrow">华东零售 · 日常运营</p>
+        <h1>运营工作台</h1>
+        <p class="lede">会议跟进与任务流转一览。下一次流转时间已加粗标出，便于当日排班。</p>
+      </div>
+      <div class="masthead-meta">
+        <span class="meta-kicker">工作日</span>
+        <time datetime="2026-08-18">8 月 18 日 · 周二</time>
+      </div>
+    </header>
+
+    <section class="stats" aria-label="会议统计">
+      <h2 class="sr-only">会议统计</h2>
+      <ul class="stat-row">
+        <li class="chip">
+          <span class="chip-label">今日会议</span>
+          <span class="chip-value">2</span>
+        </li>
+        <li class="chip">
+          <span class="chip-label">本周会议</span>
+          <span class="chip-value">5</span>
+        </li>
+        <li class="chip chip-warn">
+          <span class="chip-label">待跟进</span>
+          <span class="chip-value">4</span>
+        </li>
+        <li class="chip chip-done">
+          <span class="chip-label">已完成</span>
+          <span class="chip-value">1</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="board" aria-label="任务列表">
+      <div class="board-head">
+        <h2>任务列表</h2>
+        <p>名称、当前状态、负责人、下一次流转时间</p>
+      </div>
+
+      <div class="table-shell">
+        <table class="ops-table">
+          <thead>
+            <tr>
+              <th scope="col" class="col-name">名称</th>
+              <th scope="col" class="col-status">当前状态</th>
+              <th scope="col" class="col-owner">负责人</th>
+              <th scope="col" class="col-next">下一次流转时间</th>
+              <th scope="col" class="col-note">备注</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td data-label="名称" class="col-name">华东大客户季度复盘</td>
+              <td data-label="当前状态" class="col-status"><span class="status status-progress">进行中</span></td>
+              <td data-label="负责人" class="col-owner">李敏</td>
+              <td data-label="下一次流转时间" class="col-next"><time datetime="2026-08-18T10:30">今天 10:30</time></td>
+              <td data-label="备注" class="col-note">整理会议纪要待确认</td>
+            </tr>
+            <tr>
+              <td data-label="名称" class="col-name">供应商合同用印</td>
+              <td data-label="当前状态" class="col-status"><span class="status status-flow">流转中</span></td>
+              <td data-label="负责人" class="col-owner">张凯</td>
+              <td data-label="下一次流转时间" class="col-next"><time datetime="2026-08-18T14:00">今天 14:00</time></td>
+              <td data-label="备注" class="col-note">法务审批中</td>
+            </tr>
+            <tr>
+              <td data-label="名称" class="col-name">南京新街口店巡检整改</td>
+              <td data-label="当前状态" class="col-status"><span class="status status-follow">待跟进</span></td>
+              <td data-label="负责人" class="col-owner">店长</td>
+              <td data-label="下一次流转时间" class="col-next"><time datetime="2026-08-19T09:00">明天 09:00</time></td>
+              <td data-label="备注" class="col-note">回传整改照片</td>
+            </tr>
+            <tr>
+              <td data-label="名称" class="col-name">新品上市排期对齐</td>
+              <td data-label="当前状态" class="col-status"><span class="status status-progress">进行中</span></td>
+              <td data-label="负责人" class="col-owner">王倩</td>
+              <td data-label="下一次流转时间" class="col-next"><time datetime="2026-08-18T16:30">今天 16:30</time></td>
+              <td data-label="备注" class="col-note">约齐渠道会</td>
+            </tr>
+            <tr>
+              <td data-label="名称" class="col-name">售后升级单 #4821</td>
+              <td data-label="当前状态" class="col-status"><span class="status status-blocked">已阻塞</span></td>
+              <td data-label="负责人" class="col-owner">质检</td>
+              <td data-label="下一次流转时间" class="col-next"><time datetime="2026-08-19T11:00">明天 11:00</time></td>
+              <td data-label="备注" class="col-note">等责任判定</td>
+            </tr>
+            <tr class="is-done">
+              <td data-label="名称" class="col-name">周例会行动项回收</td>
+              <td data-label="当前状态" class="col-status"><span class="status status-done">已完成</span></td>
+              <td data-label="负责人" class="col-owner">周琪</td>
+              <td data-label="下一次流转时间" class="col-next is-ended">已结束</td>
+              <td data-label="备注" class="col-note">已关闭 7 项</td>
+            </tr>
+            <tr>
+              <td data-label="名称" class="col-name">渠道费用对账 8 月</td>
+              <td data-label="当前状态" class="col-status"><span class="status status-wait">等待中</span></td>
+              <td data-label="负责人" class="col-owner">财务</td>
+              <td data-label="下一次流转时间" class="col-next"><time datetime="2026-08-20T15:00">周四 15:00</time></td>
+              <td data-label="备注" class="col-note">待回传差异表</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
