@@ -1,0 +1,508 @@
+:root {
+  --paper: #f3eadc;
+  --card: #fff8ee;
+  --ink: #221c14;
+  --ink-soft: #5d5346;
+  --rule: #d8c7ae;
+  --gold: #b56a28;
+  --shadow: 0 16px 36px rgba(68, 42, 18, 0.07);
+  --serif: "Fraunces", "Songti SC", "Times New Roman", serif;
+  --sans: "Source Sans 3", "PingFang SC", "Noto Sans SC", sans-serif;
+  --progress-fg: #6a430f;
+  --progress-bg: #f3dcab;
+  --flow-fg: #6d2d16;
+  --flow-bg: #f0c4ad;
+  --follow-fg: #3d4a2e;
+  --follow-bg: #d5ddc0;
+  --blocked-fg: #fff8ee;
+  --blocked-bg: #8b2e24;
+  --done-fg: #2f3b28;
+  --done-bg: #cfd8c4;
+  --wait-fg: #4d4336;
+  --wait-bg: #e4d8c6;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--ink);
+  background:
+    radial-gradient(1100px 480px at 8% -8%, rgba(255, 236, 196, 0.9), transparent 58%),
+    radial-gradient(820px 420px at 100% 0%, rgba(232, 196, 148, 0.24), transparent 52%),
+    linear-gradient(180deg, #f7f0e3 0%, var(--paper) 46%, #efe4d2 100%);
+  font-family: var(--sans);
+  line-height: 1.5;
+}
+
+.page {
+  width: min(1240px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 40px 0 64px;
+}
+
+.masthead {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.9fr) minmax(280px, 1.5fr) auto;
+  gap: 24px 36px;
+  align-items: end;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.eyebrow,
+.clock__label,
+.stat__label,
+.stats__kicker,
+.panel__head p,
+.task__hint,
+.colophon,
+.when__day {
+  color: var(--ink-soft);
+}
+
+.eyebrow,
+.clock__label,
+.stats__kicker,
+.row--head,
+.when__day {
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.eyebrow,
+.clock__label,
+.stats__kicker,
+.row--head {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.date-line {
+  margin-top: 10px;
+  font-family: var(--serif);
+  font-size: 1.02rem;
+  letter-spacing: 0.08em;
+}
+
+.masthead__title h1 {
+  font-family: var(--serif);
+  font-size: clamp(2.6rem, 4.6vw, 4.2rem);
+  font-weight: 560;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.lede {
+  max-width: 28em;
+  margin-top: 14px;
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+}
+
+.masthead__clock {
+  min-width: 164px;
+  padding: 12px 16px 8px;
+  border: 1px solid var(--rule);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  text-align: right;
+}
+
+.clock__label {
+  display: block;
+}
+
+.clock__time,
+.slot__time,
+.when__clock {
+  font-family: var(--serif);
+  font-weight: 560;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.clock__time {
+  display: block;
+  font-size: 3.1rem;
+  line-height: 1;
+}
+
+.stats {
+  margin: 16px 0 28px;
+}
+
+.stats__kicker {
+  margin-bottom: 8px;
+}
+
+.stats__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px 20px;
+}
+
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--rule);
+}
+
+.stat__num {
+  font-family: var(--serif);
+  font-size: 1.45rem;
+  font-weight: 560;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+.stat__label {
+  font-size: 0.8rem;
+}
+
+.workbench {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.78fr) minmax(0, 1.42fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.today,
+.board {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  box-shadow: var(--shadow);
+}
+
+.today {
+  padding: 28px 26px 18px;
+}
+
+.board {
+  padding: 28px 26px 10px;
+}
+
+.panel__head h2 {
+  font-family: var(--serif);
+  font-size: 1.65rem;
+  font-weight: 560;
+  letter-spacing: -0.02em;
+}
+
+.panel__head p {
+  margin: 8px 0 22px;
+  font-size: 0.94rem;
+}
+
+.timeline {
+  list-style: none;
+  border-left: 1px solid var(--rule);
+  margin-left: 5.1rem;
+}
+
+.slot {
+  display: grid;
+  grid-template-columns: 5.1rem minmax(0, 1fr);
+  gap: 16px;
+  margin-left: -5.1rem;
+  padding-bottom: 28px;
+  position: relative;
+}
+
+.slot:last-child {
+  padding-bottom: 6px;
+}
+
+.slot::before {
+  content: "";
+  position: absolute;
+  left: 4.95rem;
+  top: 0.95rem;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 4px var(--card);
+}
+
+.slot__time {
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--gold);
+  text-align: right;
+  padding-top: 2px;
+}
+
+.slot__body {
+  padding-left: 18px;
+  min-width: 0;
+}
+
+.slot__body h3 {
+  font-size: 1.06rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.slot__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.slot__owner {
+  font-weight: 600;
+}
+
+.table {
+  display: grid;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 2.3fr) 0.82fr 0.66fr 1.2fr;
+  gap: 12px 14px;
+  align-items: center;
+  padding: 15px 2px;
+  border-top: 1px solid var(--rule);
+}
+
+.row--head {
+  padding-top: 0;
+  padding-bottom: 10px;
+  border-top: 0;
+}
+
+.row__when-label {
+  text-align: right;
+}
+
+.row--done .task strong,
+.row--done .owner,
+.row--done .when__clock {
+  color: var(--ink-soft);
+}
+
+.task {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.task strong {
+  font-size: 1.02rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.task__hint {
+  font-size: 0.8rem;
+}
+
+.owner {
+  font-weight: 600;
+}
+
+.when {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  text-align: right;
+}
+
+.when__day {
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.when__clock {
+  font-size: 1.7rem;
+  line-height: 0.92;
+}
+
+.when--today .when__clock {
+  color: var(--gold);
+  font-size: 1.85rem;
+}
+
+.when--ended .when__clock {
+  font-size: 1.2rem;
+}
+
+.badge {
+  display: inline-block;
+  min-width: 4.6em;
+  padding: 3px 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.badge--progress {
+  color: var(--progress-fg);
+  background: var(--progress-bg);
+}
+
+.badge--flow {
+  color: var(--flow-fg);
+  background: var(--flow-bg);
+}
+
+.badge--follow {
+  color: var(--follow-fg);
+  background: var(--follow-bg);
+}
+
+.badge--blocked {
+  color: var(--blocked-fg);
+  background: var(--blocked-bg);
+}
+
+.badge--done {
+  color: var(--done-fg);
+  background: var(--done-bg);
+}
+
+.badge--wait {
+  color: var(--wait-fg);
+  background: var(--wait-bg);
+}
+
+.colophon {
+  margin-top: 28px;
+  font-size: 0.86rem;
+}
+
+@media (max-width: 1040px) {
+  .masthead {
+    grid-template-columns: 1fr auto;
+  }
+
+  .masthead__title {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 900px) {
+  .page {
+    width: min(100% - 28px, 1240px);
+    padding: 24px 0 48px;
+  }
+
+  .masthead,
+  .workbench,
+  .stats__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .masthead__clock {
+    justify-self: start;
+    text-align: left;
+  }
+
+  .stats__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .today,
+  .board {
+    padding: 22px 18px 12px;
+  }
+
+  .timeline {
+    margin-left: 0;
+    border-left: 0;
+  }
+
+  .slot {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-left: 0;
+    padding: 16px 0 20px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .slot:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .slot::before {
+    display: none;
+  }
+
+  .slot__time {
+    text-align: left;
+    font-size: 2.35rem;
+  }
+
+  .slot__body {
+    padding-left: 0;
+  }
+
+  .row--head {
+    display: none;
+  }
+
+  .row {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "when when"
+      "task task"
+      "status owner";
+    align-items: start;
+    padding: 18px 0;
+  }
+
+  .when {
+    grid-area: when;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 12px;
+    text-align: left;
+  }
+
+  .when__clock,
+  .when--today .when__clock {
+    font-size: 2.15rem;
+  }
+
+  .when--ended .when__clock {
+    font-size: 1.35rem;
+  }
+
+  .task {
+    grid-area: task;
+  }
+
+  .status {
+    grid-area: status;
+  }
+
+  .owner {
+    grid-area: owner;
+    justify-self: end;
+    align-self: center;
+  }
+}
