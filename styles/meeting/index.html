@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f3eadc" />
+  <meta name="description" content="华章营运协同任务简报：先看时间，再看人，今天要推进的任务和下次流转。" />
   <title>任务简报 · 华章营运协同</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -29,137 +31,170 @@
     </header>
 
     <section class="stats" aria-label="辅助统计">
-      <article class="stat">
-        <span class="stat__num">2</span>
-        <span class="stat__label">今日会议</span>
-      </article>
-      <article class="stat">
-        <span class="stat__num">5</span>
-        <span class="stat__label">本周会议</span>
-      </article>
-      <article class="stat">
-        <span class="stat__num">4</span>
-        <span class="stat__label">待跟进</span>
-      </article>
-      <article class="stat">
-        <span class="stat__num">1</span>
-        <span class="stat__label">已完成</span>
-      </article>
+      <p class="stats__kicker">对照数字</p>
+      <div class="stats__grid">
+        <article class="stat">
+          <span class="stat__num">2</span>
+          <span class="stat__label">今日会议</span>
+        </article>
+        <article class="stat">
+          <span class="stat__num">5</span>
+          <span class="stat__label">本周会议</span>
+        </article>
+        <article class="stat">
+          <span class="stat__num">4</span>
+          <span class="stat__label">待跟进</span>
+        </article>
+        <article class="stat">
+          <span class="stat__num">1</span>
+          <span class="stat__label">已完成</span>
+        </article>
+      </div>
     </section>
 
     <div class="workbench">
-      <aside class="agenda" aria-labelledby="agenda-heading">
-        <div class="agenda__head">
-          <h2 id="agenda-heading">今天要推进</h2>
-          <p>今天必须推进的三件任务，按下一次流转时间排列。</p>
+      <aside class="today" aria-labelledby="today-heading">
+        <div class="panel__head">
+          <h2 id="today-heading">今天要推进</h2>
+          <p>三件今日任务，按下一次流转时间排列。先对钟点，再对人。</p>
         </div>
         <ol class="timeline">
           <li class="slot">
             <time class="slot__time" datetime="2026-08-18T10:30">10:30</time>
             <div class="slot__body">
               <h3>华东大客户季度复盘</h3>
-              <p>李敏 · 进行中</p>
+              <p class="slot__meta">
+                <span class="slot__owner">李敏</span>
+                <span class="badge badge--progress">进行中</span>
+              </p>
             </div>
           </li>
           <li class="slot">
             <time class="slot__time" datetime="2026-08-18T14:00">14:00</time>
             <div class="slot__body">
               <h3>供应商合同用印</h3>
-              <p>张凯 · 流转中</p>
+              <p class="slot__meta">
+                <span class="slot__owner">张凯</span>
+                <span class="badge badge--flow">流转中</span>
+              </p>
             </div>
           </li>
           <li class="slot">
             <time class="slot__time" datetime="2026-08-18T16:30">16:30</time>
             <div class="slot__body">
               <h3>新品上市排期对齐</h3>
-              <p>王倩 · 进行中</p>
+              <p class="slot__meta">
+                <span class="slot__owner">王倩</span>
+                <span class="badge badge--progress">进行中</span>
+              </p>
             </div>
           </li>
         </ol>
       </aside>
 
       <section class="board" aria-labelledby="board-heading">
-        <div class="board__head">
+        <div class="panel__head">
           <h2 id="board-heading">任务列表</h2>
           <p>状态、负责人、下次流转时间。时间写大，方便扫一眼排程。</p>
         </div>
 
         <div class="table" role="table" aria-label="任务列表">
-          <div class="table__row table__row--head" role="row">
+          <div class="row row--head" role="row">
             <span role="columnheader">任务</span>
             <span role="columnheader">状态</span>
             <span role="columnheader">负责人</span>
-            <span role="columnheader">下次流转时间</span>
+            <span class="row__when-label" role="columnheader">下次流转时间</span>
           </div>
 
-          <article class="table__row" role="row">
+          <article class="row" role="row">
             <div class="task" role="cell">
               <strong>华东大客户季度复盘</strong>
               <span class="task__hint">大客户经营 · 季度节奏</span>
             </div>
-            <div role="cell"><span class="badge badge--progress">进行中</span></div>
+            <div class="status" role="cell"><span class="badge badge--progress">进行中</span></div>
             <div class="owner" role="cell">李敏</div>
-            <time class="when" role="cell" datetime="2026-08-18T10:30"><em>今天</em> 10:30</time>
+            <time class="when when--today" role="cell" datetime="2026-08-18T10:30">
+              <span class="when__day">今天</span>
+              <span class="when__clock">10:30</span>
+            </time>
           </article>
 
-          <article class="table__row" role="row">
+          <article class="row" role="row">
             <div class="task" role="cell">
               <strong>供应商合同用印</strong>
               <span class="task__hint">法务流转 · 盖章窗口</span>
             </div>
-            <div role="cell"><span class="badge badge--flow">流转中</span></div>
+            <div class="status" role="cell"><span class="badge badge--flow">流转中</span></div>
             <div class="owner" role="cell">张凯</div>
-            <time class="when" role="cell" datetime="2026-08-18T14:00"><em>今天</em> 14:00</time>
+            <time class="when when--today" role="cell" datetime="2026-08-18T14:00">
+              <span class="when__day">今天</span>
+              <span class="when__clock">14:00</span>
+            </time>
           </article>
 
-          <article class="table__row" role="row">
+          <article class="row" role="row">
             <div class="task" role="cell">
               <strong>南京新街口店巡检整改</strong>
               <span class="task__hint">门店营运 · 现场闭环</span>
             </div>
-            <div role="cell"><span class="badge badge--follow">待跟进</span></div>
+            <div class="status" role="cell"><span class="badge badge--follow">待跟进</span></div>
             <div class="owner" role="cell">店长</div>
-            <time class="when" role="cell" datetime="2026-08-19T09:00"><em>明天</em> 09:00</time>
+            <time class="when" role="cell" datetime="2026-08-19T09:00">
+              <span class="when__day">明天</span>
+              <span class="when__clock">09:00</span>
+            </time>
           </article>
 
-          <article class="table__row" role="row">
+          <article class="row" role="row">
             <div class="task" role="cell">
               <strong>新品上市排期对齐</strong>
               <span class="task__hint">商品中心 · 上市窗口</span>
             </div>
-            <div role="cell"><span class="badge badge--progress">进行中</span></div>
+            <div class="status" role="cell"><span class="badge badge--progress">进行中</span></div>
             <div class="owner" role="cell">王倩</div>
-            <time class="when" role="cell" datetime="2026-08-18T16:30"><em>今天</em> 16:30</time>
+            <time class="when when--today" role="cell" datetime="2026-08-18T16:30">
+              <span class="when__day">今天</span>
+              <span class="when__clock">16:30</span>
+            </time>
           </article>
 
-          <article class="table__row" role="row">
+          <article class="row" role="row">
             <div class="task" role="cell">
               <strong>售后升级单 #4821</strong>
               <span class="task__hint">品质协同 · 升级处理</span>
             </div>
-            <div role="cell"><span class="badge badge--blocked">已阻塞</span></div>
+            <div class="status" role="cell"><span class="badge badge--blocked">已阻塞</span></div>
             <div class="owner" role="cell">质检</div>
-            <time class="when" role="cell" datetime="2026-08-19T11:00"><em>明天</em> 11:00</time>
+            <time class="when" role="cell" datetime="2026-08-19T11:00">
+              <span class="when__day">明天</span>
+              <span class="when__clock">11:00</span>
+            </time>
           </article>
 
-          <article class="table__row table__row--done" role="row">
+          <article class="row row--done" role="row">
             <div class="task" role="cell">
               <strong>周例会行动项回收</strong>
               <span class="task__hint">例会纪要 · 行动闭环</span>
             </div>
-            <div role="cell"><span class="badge badge--done">已完成</span></div>
+            <div class="status" role="cell"><span class="badge badge--done">已完成</span></div>
             <div class="owner" role="cell">周琪</div>
-            <time class="when when--ended" role="cell">已结束</time>
+            <time class="when when--ended" role="cell">
+              <span class="when__day">闭环</span>
+              <span class="when__clock">已结束</span>
+            </time>
           </article>
 
-          <article class="table__row" role="row">
+          <article class="row" role="row">
             <div class="task" role="cell">
               <strong>渠道费用对账 8 月</strong>
               <span class="task__hint">财务对账 · 月度结算</span>
             </div>
-            <div role="cell"><span class="badge badge--wait">等待中</span></div>
+            <div class="status" role="cell"><span class="badge badge--wait">等待中</span></div>
             <div class="owner" role="cell">财务</div>
-            <time class="when" role="cell" datetime="2026-08-20T15:00"><em>周四</em> 15:00</time>
+            <time class="when" role="cell" datetime="2026-08-20T15:00">
+              <span class="when__day">周四</span>
+              <span class="when__clock">15:00</span>
+            </time>
           </article>
         </div>
       </section>
