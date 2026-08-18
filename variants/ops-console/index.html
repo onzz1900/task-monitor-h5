@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>启航零售 Dispatch — Ops console</title>
+    <meta
+      name="description"
+      content="Internal dispatch board for meetings, follow-ups, and transfers at Qihang Retail."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236d7cff'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-size='14' font-family='Arial' fill='%23070b12'%3EQ%3C/text%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <div class="mark" aria-hidden="true">Q</div>
+          <div class="brand-copy">
+            <div class="brand-name">启航零售</div>
+            <div class="brand-sub">DISPATCH / PMO</div>
+          </div>
+        </div>
+        <nav class="nav" aria-label="Board views">
+          <div class="nav-label">Queue</div>
+          <button class="nav-item is-active" data-view="due-now">
+            <span class="dot" style="color: #f5c14a"></span> Due now
+            <span class="nav-count" data-count="due-now">0</span>
+          </button>
+          <button class="nav-item" data-view="open">
+            <span class="dot" style="color: #6d7cff"></span> Open board
+            <span class="nav-count" data-count="open">0</span>
+          </button>
+          <button class="nav-item" data-view="blocked">
+            <span class="dot" style="color: #ff6b7a"></span> Blocked
+            <span class="nav-count" data-count="blocked">0</span>
+          </button>
+          <button class="nav-item" data-view="done">
+            <span class="dot" style="color: #3dd68c"></span> Done this week
+            <span class="nav-count" data-count="done">0</span>
+          </button>
+          <div class="nav-label">Type</div>
+          <button class="nav-item" data-view="type:review"><span class="dot" style="color: #9aa4ff"></span> Reviews</button>
+          <button class="nav-item" data-view="type:seal"><span class="dot" style="color: #e8d48b"></span> Seals</button>
+          <button class="nav-item" data-view="type:audit"><span class="dot" style="color: #5eead4"></span> Store audits</button>
+          <button class="nav-item" data-view="type:launch"><span class="dot" style="color: #7dd3fc"></span> Launch schedules</button>
+          <button class="nav-item" data-view="type:aftersales"><span class="dot" style="color: #fb923c"></span> After-sales</button>
+          <button class="nav-item" data-view="type:weekly"><span class="dot" style="color: #c4b5fd"></span> Weekly actions</button>
+          <button class="nav-item" data-view="type:recon"><span class="dot" style="color: #fda4af"></span> Reconciliations</button>
+        </nav>
+        <div class="sidebar-foot">
+          <span class="avatar" id="viewer-avatar"></span>
+          <div>
+            <div class="owner-name" id="viewer-name"></div>
+            <div class="task-region" id="viewer-role"></div>
+          </div>
+        </div>
+      </aside>
+
+      <header class="topbar">
+        <button class="icon-btn" id="menu-btn" aria-label="Open navigation">☰</button>
+        <div class="crumb">
+          <span class="crumb-kicker">Internal</span>
+          <span class="crumb-title">Daily dispatch board</span>
+        </div>
+        <label class="search">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" />
+          </svg>
+          <input id="search" type="search" placeholder="Search task, owner, meeting…" autocomplete="off" />
+          <kbd>/</kbd>
+        </label>
+        <div class="clock">
+          <span class="hide-sm">Week 34</span>
+          <span><b id="clock-date">Tue 18 Aug</b></span>
+          <span id="clock-time">09:42 CST</span>
+        </div>
+      </header>
+
+      <section class="stats" aria-label="Meeting and task stats">
+        <article class="stat is-accent">
+          <div class="stat-label">Meetings today</div>
+          <div class="stat-row">
+            <span class="stat-value" id="stat-today">0</span>
+            <span class="stat-meta" id="stat-today-meta">on calendar</span>
+          </div>
+        </article>
+        <article class="stat">
+          <div class="stat-label">Meetings this week</div>
+          <div class="stat-row">
+            <span class="stat-value" id="stat-week">0</span>
+            <span class="stat-meta">Mon–Fri</span>
+          </div>
+        </article>
+        <article class="stat is-warn">
+          <div class="stat-label">Pending</div>
+          <div class="stat-row">
+            <span class="stat-value" id="stat-pending">0</span>
+            <span class="stat-meta">open work</span>
+          </div>
+        </article>
+        <article class="stat is-ok">
+          <div class="stat-label">Done</div>
+          <div class="stat-row">
+            <span class="stat-value" id="stat-done">0</span>
+            <span class="stat-meta">this week</span>
+          </div>
+        </article>
+        <article class="stat is-warn">
+          <div class="stat-label">Transfer &lt; 2h</div>
+          <div class="stat-row">
+            <span class="stat-value" id="stat-soon">0</span>
+            <span class="stat-meta">handoffs</span>
+          </div>
+        </article>
+        <article class="stat is-hot">
+          <div class="stat-label">Overdue transfer</div>
+          <div class="stat-row">
+            <span class="stat-value" id="stat-over">0</span>
+            <span class="stat-meta">needs chase</span>
+          </div>
+        </article>
+      </section>
+
+      <div class="toolbar">
+        <div class="seg" role="tablist" aria-label="Transfer window">
+          <button class="is-active" data-window="all">All times</button>
+          <button data-window="today">Today</button>
+          <button data-window="overdue">Overdue</button>
+        </div>
+        <button class="filter-chip" data-status="transferring">Transferring</button>
+        <button class="filter-chip" data-status="in-review">In review</button>
+        <button class="filter-chip" data-status="waiting">Waiting</button>
+        <span class="spacer"></span>
+        <span class="result-count" id="result-count">0 rows</span>
+      </div>
+
+      <main class="board-wrap">
+        <div class="table-scroll">
+          <table class="table">
+            <thead>
+              <tr>
+                <th class="col-id">ID</th>
+                <th>Task</th>
+                <th class="col-type">Type</th>
+                <th class="col-status">Status</th>
+                <th class="col-owner">Owner / current action</th>
+                <th class="col-xfer">Next transfer</th>
+                <th class="col-meet">Meeting</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <div class="cards" id="cards"></div>
+      </main>
+    </div>
+
+    <div class="scrim" id="scrim"></div>
+    <div class="drawer-backdrop" id="backdrop"></div>
+    <aside class="drawer" id="drawer" aria-hidden="true"></aside>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
