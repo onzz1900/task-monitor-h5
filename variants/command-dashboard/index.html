@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Command · Northline Partners</title>
+    <meta
+      name="description"
+      content="Northline Partners internal command dashboard for meetings, follow-ups, and transfers."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Sora:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="mast">
+      <div class="mast-brand">
+        <span class="mark" aria-hidden="true">N</span>
+        <div>
+          <p class="eyebrow">Northline Partners · Internal</p>
+          <h1>Command</h1>
+        </div>
+      </div>
+      <p class="mast-scope">
+        Meetings, follow-ups, and ownership transfers
+        <span>Operations floor · San Francisco</span>
+      </p>
+      <div class="mast-clock">
+        <time id="live-clock">00:00:00</time>
+        <p id="live-date">Tuesday 18 August 2026</p>
+      </div>
+    </header>
+
+    <main class="deck">
+      <section class="intel" aria-label="Meeting statistics and transfer tape">
+        <div class="mosaic" id="mosaic"></div>
+        <section class="tape" aria-label="Upcoming transfers">
+          <div class="tape-head">
+            <h2>Upcoming transfers</h2>
+            <p id="tape-caption">Today’s handoff window</p>
+          </div>
+          <div class="tape-scroll">
+            <div class="tape-track" id="tape-track"></div>
+          </div>
+        </section>
+      </section>
+
+      <section class="rail" aria-label="Task rail">
+        <div class="rail-head">
+          <div>
+            <p class="eyebrow">Active rail</p>
+            <h2>Work in motion</h2>
+          </div>
+          <p class="rail-count" id="rail-count">0 items</p>
+        </div>
+        <div class="filters" id="filters" role="tablist" aria-label="Filter tasks"></div>
+        <ol class="tasks" id="tasks"></ol>
+      </section>
+    </main>
+
+    <aside class="brief" id="brief" hidden>
+      <div class="brief-panel" role="dialog" aria-modal="true" aria-labelledby="brief-title">
+        <button class="brief-close" id="brief-close" type="button" aria-label="Close briefing">
+          Close
+        </button>
+        <div id="brief-body"></div>
+      </div>
+    </aside>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
