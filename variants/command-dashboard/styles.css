@@ -18,9 +18,9 @@
   --done: #7cb87c;
   --pending: #9aa3c2;
   --shadow: 0 28px 70px rgba(0, 0, 0, 0.48);
-  --serif: "Instrument Serif", Georgia, serif;
-  --sans: "Sora", "Avenir Next", sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --serif: "Instrument Serif", "Noto Serif SC", "Songti SC", Georgia, serif;
+  --sans: "Sora", "Noto Sans SC", "PingFang SC", "WenQuanYi Micro Hei", "Microsoft YaHei", sans-serif;
+  --mono: "IBM Plex Mono", "Noto Sans SC", ui-monospace, monospace;
   --radius: 18px;
 }
 
@@ -472,7 +472,7 @@ h1 {
 }
 
 .tape-now::after {
-  content: "NOW";
+  content: "此刻";
   position: absolute;
   top: -2px;
   left: 6px;
@@ -572,6 +572,12 @@ h1 {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.empty {
+  padding: 28px 8px;
+  color: var(--mute);
+  font-size: 0.9rem;
 }
 
 .task {

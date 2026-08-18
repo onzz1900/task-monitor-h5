@@ -4,6 +4,6 @@
 
 ## Variants
 
-- Command Dashboard: [`variants/command-dashboard/index.html`](variants/command-dashboard/index.html)
+- 指挥舱：[`variants/command-dashboard/index.html`](variants/command-dashboard/index.html)
 
 Preview locally: open that file in a browser, or run `python3 -m http.server 4173 --directory variants/command-dashboard` and visit `http://localhost:4173`.

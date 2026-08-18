@@ -1,257 +1,260 @@
 const NOW = new Date("2026-08-18T11:42:00");
 
+const WEEKDAYS_LONG = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+const WEEKDAYS_SHORT = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+
 const TASKS = [
   {
-    id: "NP-1842",
-    title: "Q3 board packet review",
-    dept: "Finance",
+    id: "辰-1842",
+    title: "三季度董事会材料复核",
+    dept: "财务",
     status: "progress",
-    owner: "Marcus Hale",
-    action: "Compiling exhibit pack for the 15:00 working session",
+    owner: "郝明泽",
+    action: "正在整理 15:00 工作会用的附件包",
     nextTransfer: "2026-08-18T15:00:00",
-    nextOwner: "Helena Cho",
+    nextOwner: "周若兰",
     notes:
-      "Board wants the cash-bridge and the two delayed close items called out on page one. Finance owns the pack until the 15:00 transfer to Corporate Secretary.",
+      "董事会要求把资金桥和两项延期交割事项写在首页。财务保管材料，15:00 流转给董事会秘书处。",
     chain: [
-      "Marcus Hale collected variance notes from Controllers at 08:40",
-      "Helena Cho receives the locked PDF at 15:00 for circulation",
+      "郝明泽于 08:40 从总账收回差异说明",
+      "周若兰 15:00 接收锁定版 PDF，负责分发",
     ],
   },
   {
-    id: "NP-1847",
-    title: "Acme renewal handoff",
-    dept: "Sales",
+    id: "辰-1847",
+    title: "安科美续约交接",
+    dept: "销售",
     status: "pending",
-    owner: "Priya Shah",
-    action: "Waiting on commercial terms from Deal Desk",
+    owner: "沈佩宜",
+    action: "等待商务条款从交易支持组返回",
     nextTransfer: "2026-08-18T13:15:00",
-    nextOwner: "Owen Blake",
+    nextOwner: "白欧文",
     notes:
-      "Renewal is $1.4M, 24 months. Deal Desk still owes the discount memo before Client Delivery can take the kickoff.",
+      "续约金额 140 万美元、期限 24 个月。折扣说明尚未到位，客户交付不能启动对接会。",
     chain: [
-      "Priya Shah opened the renewal room yesterday 17:10",
-      "Owen Blake takes the signed order at 13:15",
+      "沈佩宜昨日 17:10 打开续约工作间",
+      "白欧文 13:15 接收已签订单",
     ],
   },
   {
-    id: "NP-1851",
-    title: "Vendor SOW legal transfer",
-    dept: "Legal",
+    id: "辰-1851",
+    title: "供应商工作说明书法务流转",
+    dept: "法务",
     status: "blocked",
-    owner: "Elena Voss",
-    action: "Held — counterparty has not returned the redline",
+    owner: "林亦宁",
+    action: "阻塞——对方尚未退回红线稿",
     nextTransfer: "2026-08-18T14:30:00",
-    nextOwner: "Jonah Park",
+    nextOwner: "江泊",
     notes:
-      "Helios Labs still has the limitation-of-liability clause. Legal cannot move the SOW to Product until the countersignature lands.",
+      "曜辉科技仍扣着责任上限条款。在会签落地前，法务不能把工作说明书交给产品。",
     chain: [
-      "Elena Voss sent the third request at 09:05",
-      "Jonah Park is queued for implementation once Legal clears the hold",
+      "林亦宁于 09:05 发出第三次催办",
+      "法务解除阻塞后，江泊排队接收实施",
     ],
   },
   {
-    id: "NP-1833",
-    title: "Security exception follow-up",
-    dept: "Product",
+    id: "辰-1833",
+    title: "安全例外跟进",
+    dept: "产品",
     status: "overdue",
-    owner: "Jonah Park",
-    action: "Risk committee asked for a written exception path",
+    owner: "江泊",
+    action: "风险委员会要求书面例外路径",
     nextTransfer: "2026-08-17T16:00:00",
-    nextOwner: "Elena Voss",
+    nextOwner: "林亦宁",
     notes:
-      "The temporary vendor access was supposed to transfer to Legal yesterday at 16:00. The write-up is still incomplete.",
+      "供应商临时权限本应于昨日 16:00 流转给法务。书面说明仍未写完。",
     chain: [
-      "Jonah Park missed the 16:00 Monday transfer",
-      "Elena Voss cannot file the exception until the memo arrives",
+      "江泊错过周一 16:00 的流转节点",
+      "备忘录未到，林亦宁无法备案例外",
     ],
   },
   {
-    id: "NP-1855",
-    title: "Client kickoff debrief",
-    dept: "Client Delivery",
+    id: "辰-1855",
+    title: "客户启动会复盘",
+    dept: "客户交付",
     status: "progress",
-    owner: "Amelia Ortiz",
-    action: "Drafting action list from this morning’s call",
+    owner: "欧夏晚",
+    action: "正在整理今早通话的行动清单",
     nextTransfer: "2026-08-18T16:45:00",
-    nextOwner: "Priya Shah",
+    nextOwner: "沈佩宜",
     notes:
-      "Northline led the Harbor Freight kickoff. Four follow-ups need owners before the account is handed back to Sales for executive sponsor mapping.",
+      "北辰主持了港湾货运启动会。四项跟进需先明确负责人，再把账户交回销售做高管赞助人映射。",
     chain: [
-      "Amelia Ortiz ran the 09:30 kickoff",
-      "Priya Shah receives the sponsor map at 16:45",
+      "欧夏晚主持 09:30 启动会",
+      "沈佩宜 16:45 接收赞助人映射",
     ],
   },
   {
-    id: "NP-1828",
-    title: "Invoice dispute escalation",
-    dept: "Finance",
+    id: "辰-1828",
+    title: "发票争议升级",
+    dept: "财务",
     status: "overdue",
-    owner: "Marcus Hale",
-    action: "Collections is waiting on a credit memo decision",
+    owner: "郝明泽",
+    action: "催收组在等贷记凭证结论",
     nextTransfer: "2026-08-17T11:30:00",
-    nextOwner: "Helena Cho",
+    nextOwner: "周若兰",
     notes:
-      "Westbridge queried two July invoices. The credit memo should have moved to the CFO office yesterday morning.",
+      "西桥实业质疑两张七月发票。贷记凭证本应于昨日上午流转至财务负责人办公室。",
     chain: [
-      "Accounts receivable flagged the dispute Friday",
-      "Helena Cho expected the recommendation at 11:30 Monday",
+      "应收账款周五标出争议",
+      "周若兰原定周一 11:30 收到处理建议",
     ],
   },
   {
-    id: "NP-1859",
-    title: "Weekly ops sync follow-ups",
-    dept: "Product",
+    id: "辰-1859",
+    title: "周运营例会跟进",
+    dept: "产品",
     status: "progress",
-    owner: "Jonah Park",
-    action: "Assigning owners for the three open platform items",
+    owner: "江泊",
+    action: "为三项未结平台事项指定负责人",
     nextTransfer: "2026-08-18T15:20:00",
-    nextOwner: "Amelia Ortiz",
+    nextOwner: "欧夏晚",
     notes:
-      "Ops sync closed at 10:15. Three items still lack a receiving owner in Client Delivery.",
+      "运营同步会 10:15 结束。客户交付侧仍有三项没有接收人。",
     chain: [
-      "Jonah Park captured notes live in the room",
-      "Amelia Ortiz takes delivery items at 15:20",
+      "江泊在会上当场记录纪要",
+      "欧夏晚 15:20 接收交付事项",
     ],
   },
   {
-    id: "NP-1861",
-    title: "Partnership MSA transfer",
-    dept: "Legal",
+    id: "辰-1861",
+    title: "合作框架协议流转",
+    dept: "法务",
     status: "pending",
-    owner: "Elena Voss",
-    action: "Queued behind the Helios SOW",
+    owner: "林亦宁",
+    action: "排在曜辉工作说明书之后",
     nextTransfer: "2026-08-19T09:00:00",
-    nextOwner: "Priya Shah",
+    nextOwner: "沈佩宜",
     notes:
-      "Brightlane MSA is ready for commercial review once Legal is off the blocked SOW.",
+      "明途合伙框架协议已备好。法务从阻塞的工作说明书脱身后再转商务审阅。",
     chain: [
-      "Template approved last Thursday",
-      "Priya Shah reviews commercials Wednesday 09:00",
+      "模板上周四已获批",
+      "沈佩宜周三 09:00 审商务条款",
     ],
   },
   {
-    id: "NP-1840",
-    title: "Facilities lease amendment",
-    dept: "Legal",
+    id: "辰-1840",
+    title: "办公租赁补充协议",
+    dept: "法务",
     status: "blocked",
-    owner: "Helena Cho",
-    action: "Landlord counsel has not returned comments",
+    owner: "周若兰",
+    action: "业主律师尚未退回意见",
     nextTransfer: "2026-08-18T17:00:00",
-    nextOwner: "Marcus Hale",
+    nextOwner: "郝明泽",
     notes:
-      "The Mission Street expansion rider is frozen. Finance cannot book the occupancy accrual until Legal releases the amendment.",
+      "南京西路扩租附件冻结中。法务未放行补充协议前，财务不能计提占用成本。",
     chain: [
-      "Helena Cho sent a chaser at 08:20",
-      "Marcus Hale is scheduled to receive numbers at 17:00 if the hold lifts",
+      "周若兰于 08:20 发出催办",
+      "若阻塞解除，郝明泽 17:00 接收数字",
     ],
   },
   {
-    id: "NP-1864",
-    title: "Q4 hiring plan review",
-    dept: "People",
+    id: "辰-1864",
+    title: "四季度招聘计划评审",
+    dept: "人力",
     status: "pending",
-    owner: "Noah Kim",
-    action: "Hold for Thursday’s workforce committee",
+    owner: "金诺",
+    action: "等待周四编制委员会",
     nextTransfer: "2026-08-20T11:30:00",
-    nextOwner: "Helena Cho",
+    nextOwner: "周若兰",
     notes:
-      "Headcount plan is drafted. Transfer to Finance is locked for Thursday so the committee can see loaded cost.",
+      "编制方案已起草。周四锁定流转给财务，便于委员会看到全成本。",
     chain: [
-      "Noah Kim closed manager intake yesterday",
-      "Helena Cho receives the loaded model Thursday 11:30",
+      "金诺昨日完成经理侧征集",
+      "周若兰周四 11:30 接收全成本模型",
     ],
   },
   {
-    id: "NP-1836",
-    title: "New-hire onboarding checkpoint",
-    dept: "People",
+    id: "辰-1836",
+    title: "新人入职节点检查",
+    dept: "人力",
     status: "done",
-    owner: "Noah Kim",
-    action: "Transferred to hiring managers",
+    owner: "金诺",
+    action: "已流转至用人经理",
     nextTransfer: "2026-08-17T14:00:00",
-    nextOwner: "Department leads",
+    nextOwner: "各部门负责人",
     notes:
-      "August cohort checkpoint completed. Laptop, badge, and buddy assignments all moved on time.",
+      "八月批次节点检查已完成。电脑、工牌与带教安排均按时交接。",
     chain: [
-      "People closed the 14:00 Monday transfer",
-      "Managers now own week-one agendas",
+      "人力于周一 14:00 完成流转",
+      "经理现负责第一周日程",
     ],
   },
   {
-    id: "NP-1821",
-    title: "Product roadmap alignment",
-    dept: "Product",
+    id: "辰-1821",
+    title: "产品路线图对齐",
+    dept: "产品",
     status: "done",
-    owner: "Jonah Park",
-    action: "Notes circulated to Sales and Delivery",
+    owner: "江泊",
+    action: "纪要已发给销售与交付",
     nextTransfer: "2026-08-16T17:30:00",
-    nextOwner: "Priya Shah",
+    nextOwner: "沈佩宜",
     notes:
-      "Q4 theme lock is complete. Sales received the public narrative on Sunday evening.",
+      "四季度主题已锁定。销售于周日晚间收到对外口径。",
     chain: [
-      "Working session closed Saturday",
-      "Priya Shah accepted the narrative Sunday 17:30",
+      "工作会周六结束",
+      "沈佩宜周日 17:30 确认口径",
     ],
   },
   {
-    id: "NP-1866",
-    title: "Budget variance standup",
-    dept: "Finance",
+    id: "辰-1866",
+    title: "预算偏差站会",
+    dept: "财务",
     status: "pending",
-    owner: "Helena Cho",
-    action: "Agenda set for tomorrow’s 10:00 room",
+    owner: "周若兰",
+    action: "议程已排入明日 10:00 会议室",
     nextTransfer: "2026-08-19T10:00:00",
-    nextOwner: "Marcus Hale",
+    nextOwner: "郝明泽",
     notes:
-      "Two cost centers are still above plan. The standup transfers the working file to Controllers after the room.",
+      "两个成本中心仍超计划。站会结束后，工作底稿流转给总账。",
     chain: [
-      "Helena Cho published the pre-read at 07:50",
-      "Marcus Hale takes actions at 10:00 Wednesday",
+      "周若兰于 07:50 发布预读材料",
+      "郝明泽周三 10:00 接收行动项",
     ],
   },
   {
-    id: "NP-1868",
-    title: "Customer health review",
-    dept: "Client Delivery",
+    id: "辰-1868",
+    title: "客户健康度复盘",
+    dept: "客户交付",
     status: "progress",
-    owner: "Amelia Ortiz",
-    action: "Preparing the at-risk account brief",
+    owner: "欧夏晚",
+    action: "正在准备风险账户简报",
     nextTransfer: "2026-08-18T17:30:00",
-    nextOwner: "Priya Shah",
+    nextOwner: "沈佩宜",
     notes:
-      "Three accounts slipped below the health threshold. Sales needs the brief before close of day.",
+      "三个账户跌破健康阈值。销售需在今日收工前拿到简报。",
     chain: [
-      "Delivery scored accounts this morning",
-      "Priya Shah receives the brief at 17:30",
+      "交付今早完成账户评分",
+      "沈佩宜 17:30 接收简报",
     ],
   },
 ];
 
 const WEEK_MEETINGS = [
-  { day: "Mon", count: 3 },
-  { day: "Tue", count: 6 },
-  { day: "Wed", count: 4 },
-  { day: "Thu", count: 2 },
-  { day: "Fri", count: 2 },
-  { day: "Sat", count: 1 },
-  { day: "Sun", count: 0 },
+  { day: "一", count: 3 },
+  { day: "二", count: 6 },
+  { day: "三", count: 4 },
+  { day: "四", count: 2 },
+  { day: "五", count: 2 },
+  { day: "六", count: 1 },
+  { day: "日", count: 0 },
 ];
 
 const FILTERS = [
-  { id: "all", label: "All" },
-  { id: "live", label: "In motion" },
-  { id: "risk", label: "Risk" },
-  { id: "blocked", label: "Blocked" },
-  { id: "overdue", label: "Overdue" },
-  { id: "done", label: "Done" },
+  { id: "all", label: "全部" },
+  { id: "live", label: "流转中" },
+  { id: "risk", label: "风险" },
+  { id: "blocked", label: "阻塞" },
+  { id: "overdue", label: "逾期" },
+  { id: "done", label: "已完成" },
 ];
 
 const STATUS_LABEL = {
-  progress: "In progress",
-  pending: "Pending",
-  blocked: "Blocked",
-  overdue: "Overdue",
-  done: "Done",
+  progress: "进行中",
+  pending: "待处理",
+  blocked: "阻塞",
+  overdue: "逾期",
+  done: "已完成",
 };
 
 const state = {
@@ -270,12 +273,7 @@ function formatClock(date) {
 }
 
 function formatDate(date) {
-  return date.toLocaleDateString("en-GB", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${WEEKDAYS_LONG[date.getDay()]}`;
 }
 
 function formatTransfer(iso) {
@@ -285,18 +283,13 @@ function formatTransfer(iso) {
   yesterday.setDate(NOW.getDate() - 1);
   const isYesterday = date.toDateString() === yesterday.toDateString();
   const time = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
-  if (sameDay) return `${time} · today`;
-  if (isYesterday) return `${time} · yesterday`;
-  const day = date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
-  return `${time} · ${day}`;
+  if (sameDay) return `${time} · 今天`;
+  if (isYesterday) return `${time} · 昨天`;
+  return `${time} · ${WEEKDAYS_SHORT[date.getDay()]} ${date.getMonth() + 1}月${date.getDate()}日`;
 }
 
 function initials(name) {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("");
+  return name.slice(0, 2);
 }
 
 function matchesFilter(task) {
@@ -327,7 +320,7 @@ function renderClock() {
   const elapsed = Date.now() - renderClock.started;
   const clock = new Date(NOW.getTime() + elapsed);
   $("live-clock").textContent = formatClock(clock);
-  $("live-date").textContent = `${formatDate(NOW)} · Live floor`;
+  $("live-date").textContent = `${formatDate(NOW)} · 现场实时`;
 }
 renderClock.started = Date.now();
 
@@ -359,20 +352,20 @@ function renderMosaic() {
     .join("");
 
   $("strip").innerHTML = `
-    <button type="button" data-filter="all"><b>${s.todayMeetings}</b><span>Today</span></button>
-    <button type="button"><b>${s.weekMeetings}</b><span>Week</span></button>
-    <button type="button" data-filter="live"><b>${s.pending + s.progress}</b><span>Live</span></button>
-    <button type="button" data-filter="done"><b>${s.done}</b><span>Done</span></button>
-    <button type="button" class="risk" data-filter="risk"><b>${s.overdue.length + s.blocked.length}</b><span>Risk</span></button>
+    <button type="button" data-filter="all"><b>${s.todayMeetings}</b><span>今日</span></button>
+    <button type="button"><b>${s.weekMeetings}</b><span>本周</span></button>
+    <button type="button" data-filter="live"><b>${s.pending + s.progress}</b><span>在办</span></button>
+    <button type="button" data-filter="done"><b>${s.done}</b><span>完成</span></button>
+    <button type="button" class="risk" data-filter="risk"><b>${s.overdue.length + s.blocked.length}</b><span>风险</span></button>
   `;
 
   $("mosaic").innerHTML = `
     <article class="module today">
-      <p class="kicker">Today · 18 Aug</p>
-      <p class="hero-num">${s.todayMeetings}<span>Meetings on the floor, with ${s.todayFollowUps} follow-ups still open.</span></p>
+      <p class="kicker">今日 · 8月18日</p>
+      <p class="hero-num">${s.todayMeetings}<span>场上会议，另有 ${s.todayFollowUps} 项跟进尚未关闭。</span></p>
       <div class="split">
-        <div><b>${s.weekMeetings}</b><p>Meetings this week</p></div>
-        <div><b>${s.open}</b><p>Open work items</p></div>
+        <div><b>${s.weekMeetings}</b><p>本周会议</p></div>
+        <div><b>${s.open}</b><p>未结事项</p></div>
       </div>
       <div class="day-ring">
         <svg viewBox="0 0 72 72" aria-hidden="true">
@@ -381,39 +374,39 @@ function renderMosaic() {
             stroke-linecap="round" stroke-dasharray="${ring}"
             stroke-dashoffset="${ring * (1 - dayProgress)}" transform="rotate(-90 36 36)"/>
         </svg>
-        <p>Workday is halfway. Four rooms still sit between now and the 17:30 close.</p>
+        <p>工作日过半。此刻到 17:30 收场之间，还有四场会。</p>
       </div>
     </article>
     <article class="module">
-      <p class="kicker">Week spine</p>
-      <h3>${s.weekMeetings} meetings</h3>
+      <p class="kicker">本周节奏</p>
+      <h3>${s.weekMeetings} 场会议</h3>
       <div class="week-bars viz-hide-mobile">${weekBars}</div>
       <div class="week-labels viz-hide-mobile">${weekLabels}</div>
-      <p class="legend"><span>Mon–Sun</span><span>Tue peak</span></p>
+      <p class="legend"><span>周一至周日</span><span>周二高峰</span></p>
     </article>
     <article class="module">
-      <p class="kicker">Throughput</p>
+      <p class="kicker">流转进度</p>
       <div class="gauge">
         <div>
           <div class="num">${s.pending + s.progress}</div>
-          <p class="kicker" style="margin:10px 0 0">Pending + live</p>
+          <p class="kicker" style="margin:10px 0 0">待处理 + 在办</p>
         </div>
         <div>
           <div class="num" style="color:#7cb87c">${s.done}</div>
-          <p class="kicker" style="margin:10px 0 0">Done</p>
+          <p class="kicker" style="margin:10px 0 0">已完成</p>
         </div>
       </div>
       <div class="stack viz-hide-mobile" style="--pend:${pendingShare}%;--done:${doneShare}%">
         <span></span><span></span>
       </div>
-      <p class="legend"><span>${pendingShare}% still moving</span><span>${doneShare}% cleared</span></p>
+      <p class="legend"><span>${pendingShare}% 仍在流转</span><span>${doneShare}% 已清完</span></p>
     </article>
     <article class="module risk">
-      <p class="kicker">Risk desk</p>
-      <h3>Needs command</h3>
+      <p class="kicker">风险台</p>
+      <h3>待指挥处置</h3>
       <div class="risk-split">
-        <div><strong>${s.overdue.length}</strong><span>Overdue</span></div>
-        <div><strong>${s.blocked.length}</strong><span>Blocked</span></div>
+        <div><strong>${s.overdue.length}</strong><span>逾期</span></div>
+        <div><strong>${s.blocked.length}</strong><span>阻塞</span></div>
       </div>
       <ul class="risk-list">${riskItems}</ul>
     </article>
@@ -429,7 +422,7 @@ function upcomingTransfers() {
 
 function renderTape() {
   const items = upcomingTransfers();
-  $("tape-caption").textContent = `${items.length} handoffs remaining today`;
+  $("tape-caption").textContent = `今日还剩 ${items.length} 次流转`;
 
   const start = new Date(NOW);
   start.setHours(8, 0, 0, 0);
@@ -472,7 +465,11 @@ function renderFilters() {
 
 function renderTasks() {
   const visible = TASKS.filter(matchesFilter);
-  $("rail-count").textContent = `${visible.length} items`;
+  $("rail-count").textContent = `${visible.length} 项`;
+  if (!visible.length) {
+    $("tasks").innerHTML = `<li class="empty">当前筛选下没有事项。</li>`;
+    return;
+  }
   $("tasks").innerHTML = visible
     .map(
       (task) => `
@@ -488,7 +485,7 @@ function renderTasks() {
               <span>${task.owner} · ${task.action}</span>
             </div>
             <div class="xfer">
-              <span>Next transfer</span>
+              <span>下次流转</span>
               <time datetime="${task.nextTransfer}">${formatTransfer(task.nextTransfer)}</time>
             </div>
           </button>
@@ -507,13 +504,13 @@ function openBrief(id) {
     <h2 id="brief-title" class="rail-head" style="display:block;margin:8px 0 12px;font-family:var(--serif);font-size:2rem;font-weight:400">${task.title}</h2>
     <p class="status ${task.status}"><i></i>${STATUS_LABEL[task.status]}</p>
     <div class="xfer">
-      <span>Next transfer</span>
+      <span>下次流转</span>
       <time datetime="${task.nextTransfer}">${formatTransfer(task.nextTransfer)}</time>
     </div>
     <p class="notes">${task.notes}</p>
-    <p class="kicker" style="margin-top:22px">Current action</p>
+    <p class="kicker" style="margin-top:22px">当前动作</p>
     <p class="notes">${task.owner} · ${task.action}</p>
-    <p class="kicker" style="margin-top:22px">Receives next</p>
+    <p class="kicker" style="margin-top:22px">下一位接收人</p>
     <p class="notes">${task.nextOwner}</p>
     <ol class="chain">${task.chain.map((step) => `<li>${step}</li>`).join("")}</ol>
   `;

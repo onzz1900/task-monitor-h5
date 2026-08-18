@@ -1,13 +1,13 @@
-# Command Dashboard
+# 指挥舱
 
-Dark executive command surface for Northline Partners internal task tracking — meetings, follow-ups, and ownership transfers.
+北辰集团内部任务指挥舱——会议、跟进与权责流转。深色高管指挥界面。
 
-## Preview
+## 预览
 
-Open `index.html` directly, or:
+直接打开 `index.html`，或：
 
 ```bash
 python3 -m http.server 4173 --directory variants/command-dashboard
 ```
 
-Then visit `http://localhost:4173`.
+然后访问 `http://localhost:4173`。
