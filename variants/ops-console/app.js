@@ -1,44 +1,42 @@
 (function () {
   const data = window.DISPATCH;
+  if (!data || !Array.isArray(data.tasks) || !data.tasks.length) return;
+
   const now = new Date(data.now);
+  const TZ = "Asia/Shanghai";
+  const FOLLOW = data.followStatuses || ["流转中", "待跟进", "已阻塞", "等待中"];
 
   const TYPE_LABEL = {
-    review: "Review",
-    seal: "Seal",
-    audit: "Store audit",
-    launch: "Launch",
-    aftersales: "After-sales",
-    weekly: "Weekly action",
-    recon: "Recon",
+    review: "审阅",
+    seal: "用印",
+    audit: "巡检",
+    launch: "上市",
+    aftersales: "售后",
+    weekly: "周行动",
+    recon: "对账",
   };
 
-  const STATUS_LABEL = {
-    pending: "Pending",
-    "in-review": "In review",
-    transferring: "Transferring",
-    waiting: "Waiting",
-    blocked: "Blocked",
-    done: "Done",
+  const STATUS_CLASS = {
+    进行中: "in-review",
+    流转中: "transferring",
+    待跟进: "pending",
+    已阻塞: "blocked",
+    等待中: "waiting",
+    已完成: "done",
   };
 
   const AVATAR_HUE = {
-    fang: 230,
-    chen: 265,
-    lin: 160,
-    zhao: 38,
-    su: 200,
-    zhou: 320,
-    han: 190,
-    shen: 145,
-    wu: 20,
-    pei: 280,
-    rong: 48,
+    limin: 230,
+    zhangkai: 265,
+    dianzhang: 160,
+    wangqian: 38,
+    zhijian: 200,
+    zhouqi: 320,
+    caiwu: 48,
   };
 
-  const TZ = "Asia/Shanghai";
-
   const state = {
-    view: "open",
+    view: "all",
     window: "all",
     status: null,
     query: "",
@@ -57,12 +55,14 @@
     menu: document.getElementById("menu-btn"),
   };
 
+  if (!els.rows || !els.cards) return;
+
   function person(id) {
-    return data.people[id];
+    return data.people[id] || { name: "—", role: "", initials: "·" };
   }
 
   function meeting(id) {
-    return data.meetings.find((m) => m.id === id);
+    return data.meetings.find((m) => m.id === id) || null;
   }
 
   function avatarStyle(id) {
@@ -76,11 +76,10 @@
   }
 
   function tzParts(d) {
-    const fmt = new Intl.DateTimeFormat("en-GB", {
+    const fmt = new Intl.DateTimeFormat("zh-CN", {
       timeZone: TZ,
       weekday: "short",
-      year: "numeric",
-      month: "short",
+      month: "numeric",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
@@ -96,22 +95,18 @@
   function sameShanghaiDay(a, b) {
     const pa = tzParts(a);
     const pb = tzParts(b);
-    return pa.year === pb.year && pa.month === pb.month && pa.day === pb.day;
+    return pa.month === pb.month && pa.day === pb.day;
   }
 
-  function fmtClock(d) {
-    const p = tzParts(d);
-    return {
-      date: `${p.weekday} ${p.day} ${p.month}`,
-      time: `${p.hour}:${p.minute} ${data.timezone}`,
-    };
-  }
-
-  function fmtStamp(iso) {
+  function fmtStamp(iso, fallback) {
+    if (!iso) return fallback || "—";
     const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return fallback || "—";
     const p = tzParts(d);
-    const day = sameShanghaiDay(d, now) ? "Today" : p.weekday;
-    return `${day} ${p.hour}:${p.minute}`;
+    if (sameShanghaiDay(d, now)) return `今天 ${p.hour}:${p.minute}`;
+    const weekdays = { 周日: "周日", 周一: "周一", 周二: "周二", 周三: "周三", 周四: "周四", 周五: "周五", 周六: "周六" };
+    const wd = weekdays[p.weekday] || p.weekday;
+    return `${wd} ${p.hour}:${p.minute}`;
   }
 
   function minutesUntil(iso) {
@@ -119,7 +114,7 @@
   }
 
   function transferTone(task) {
-    if (task.status === "done") return "done";
+    if (task.status === "已完成") return "done";
     const mins = minutesUntil(task.nextTransferAt);
     if (mins < 0) return "over";
     if (mins <= 120) return "now";
@@ -127,44 +122,42 @@
   }
 
   function relativeTransfer(task) {
-    if (task.status === "done") return "closed";
+    if (task.status === "已完成") return "已结束";
     const mins = minutesUntil(task.nextTransferAt);
     const abs = Math.abs(mins);
     const h = Math.floor(abs / 60);
     const m = abs % 60;
-    const clock = h > 0 ? `${h}h ${m}m` : `${m}m`;
-    if (mins < 0) return `Overdue ${clock}`;
-    if (mins === 0) return "Now";
-    return `In ${clock}`;
+    const clock = h > 0 ? `${h}小时${m}分` : `${m}分钟`;
+    if (mins < 0) return `已超时 ${clock}`;
+    if (mins === 0) return "现在";
+    return `${clock}后`;
   }
 
-  function isOpen(task) {
-    return task.status !== "done";
+  function isFollow(task) {
+    return FOLLOW.indexOf(task.status) !== -1;
   }
 
   function isDueNow(task) {
-    if (!isOpen(task)) return false;
-    const mins = minutesUntil(task.nextTransferAt);
-    return mins <= 120;
+    if (task.status === "已完成") return false;
+    return minutesUntil(task.nextTransferAt) <= 120;
   }
 
   function matchesView(task) {
     const view = state.view;
+    if (view === "all" || view === "open") return true;
     if (view === "due-now") return isDueNow(task);
-    if (view === "open") return isOpen(task);
-    if (view === "blocked") return task.status === "blocked";
-    if (view === "done") return task.status === "done";
+    if (view === "blocked") return task.status === "已阻塞";
+    if (view === "done") return task.status === "已完成";
     if (view.startsWith("type:")) return task.type === view.slice(5);
     return true;
   }
 
   function matchesWindow(task) {
     if (state.window === "all") return true;
+    if (task.status === "已完成") return state.window !== "overdue";
     const tone = transferTone(task);
-    if (state.window === "overdue") return tone === "over" && isOpen(task);
-    if (state.window === "today") {
-      return sameShanghaiDay(new Date(task.nextTransferAt), now);
-    }
+    if (state.window === "overdue") return tone === "over";
+    if (state.window === "today") return sameShanghaiDay(new Date(task.nextTransferAt), now);
     return true;
   }
 
@@ -179,11 +172,11 @@
       task.action,
       task.region,
       TYPE_LABEL[task.type],
-      STATUS_LABEL[task.status],
+      task.status,
       owner.name,
-      owner.role,
-      meet.title,
+      meet && meet.title,
     ]
+      .filter(Boolean)
       .join(" ")
       .toLowerCase();
     return hay.includes(q);
@@ -192,56 +185,65 @@
   function visibleTasks() {
     return data.tasks
       .filter((t) => matchesView(t) && matchesWindow(t) && (!state.status || t.status === state.status) && matchesQuery(t))
-      .sort((a, b) => new Date(a.nextTransferAt) - new Date(b.nextTransferAt));
+      .slice()
+      .sort((a, b) => {
+        if (a.status === "已完成" && b.status !== "已完成") return 1;
+        if (b.status === "已完成" && a.status !== "已完成") return -1;
+        return new Date(a.nextTransferAt) - new Date(b.nextTransferAt);
+      });
+  }
+
+  function deriveStats() {
+    const todayMeetings = data.tasks.filter((t) => t.meetingFlag === "today").length;
+    const weekMeetings = data.tasks.filter((t) => t.meetingFlag === "today" || t.meetingFlag === "week").length;
+    const pending = data.tasks.filter(isFollow).length;
+    const done = data.tasks.filter((t) => t.status === "已完成").length;
+    const soon = data.tasks.filter(isDueNow).length;
+    const blocked = data.tasks.filter((t) => t.status === "已阻塞").length;
+    return { todayMeetings, weekMeetings, pending, done, soon, blocked };
   }
 
   function renderStats() {
-    const todayMeetings = data.meetings.filter((m) => m.window === "today");
-    const pending = data.tasks.filter(isOpen);
-    const done = data.tasks.filter((t) => t.status === "done");
-    const soon = data.tasks.filter((t) => isOpen(t) && minutesUntil(t.nextTransferAt) >= 0 && minutesUntil(t.nextTransferAt) <= 120);
-    const over = data.tasks.filter((t) => isOpen(t) && minutesUntil(t.nextTransferAt) < 0);
-
-    document.getElementById("stat-today").textContent = String(todayMeetings.length);
-    const first = todayMeetings[0];
-    const last = todayMeetings[todayMeetings.length - 1];
-    document.getElementById("stat-today-meta").textContent = first
-      ? `${fmtStamp(first.when).replace("Today ", "")}–${fmtStamp(last.when).replace("Today ", "")}`
-      : "on calendar";
-    document.getElementById("stat-week").textContent = String(data.meetings.length);
-    document.getElementById("stat-pending").textContent = String(pending.length);
-    document.getElementById("stat-done").textContent = String(done.length);
-    document.getElementById("stat-soon").textContent = String(soon.length);
-    document.getElementById("stat-over").textContent = String(over.length);
-
-    document.querySelector('[data-count="due-now"]').textContent = String(
-      data.tasks.filter(isDueNow).length
-    );
-    document.querySelector('[data-count="open"]').textContent = String(pending.length);
-    document.querySelector('[data-count="blocked"]').textContent = String(
-      data.tasks.filter((t) => t.status === "blocked").length
-    );
-    document.querySelector('[data-count="done"]').textContent = String(done.length);
+    const stats = deriveStats();
+    const set = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = String(value);
+    };
+    set("stat-today", stats.todayMeetings);
+    set("stat-week", stats.weekMeetings);
+    set("stat-pending", stats.pending);
+    set("stat-done", stats.done);
+    const due = document.querySelector('[data-count="due-now"]');
+    const open = document.querySelector('[data-count="open"]');
+    const blocked = document.querySelector('[data-count="blocked"]');
+    const done = document.querySelector('[data-count="done"]');
+    if (due) due.textContent = String(stats.soon);
+    if (open) open.textContent = String(data.tasks.length);
+    if (blocked) blocked.textContent = String(stats.blocked);
+    if (done) done.textContent = String(stats.done);
   }
 
   function transferCell(task) {
     const tone = transferTone(task);
     const next = person(task.nextTransferTo);
+    const when = task.status === "已完成" ? "已结束" : task.nextLabel || fmtStamp(task.nextTransferAt);
+    const rel = task.status === "已完成" ? "本周已关闭" : `${relativeTransfer(task)} → ${next.name}`;
     return `
       <div class="xfer is-${tone}">
-        <div class="xfer-when">${fmtStamp(task.nextTransferAt)}</div>
-        <div class="xfer-rel">${relativeTransfer(task)} → ${next.name}</div>
+        <div class="xfer-kicker">下次流转</div>
+        <div class="xfer-when">${when}</div>
+        <div class="xfer-rel">${rel}</div>
       </div>
     `;
   }
 
   function renderRows() {
     const tasks = visibleTasks();
-    els.result.textContent = `${tasks.length} row${tasks.length === 1 ? "" : "s"}`;
+    els.result.textContent = `${tasks.length} 条`;
 
     if (!tasks.length) {
-      els.rows.innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty"><b>No matching work</b>Clear search or switch queue.</div></td></tr>`;
-      els.cards.innerHTML = `<div class="empty"><b>No matching work</b>Clear search or switch queue.</div>`;
+      els.rows.innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty"><b>没有匹配的任务</b>请清空筛选或换一个队列。</div></td></tr>`;
+      els.cards.innerHTML = `<div class="empty"><b>没有匹配的任务</b>请清空筛选或换一个队列。</div>`;
       return;
     }
 
@@ -250,6 +252,7 @@
         const owner = person(task.owner);
         const meet = meeting(task.meeting);
         const selected = state.selected === task.id ? " is-selected" : "";
+        const statusClass = STATUS_CLASS[task.status] || "pending";
         return `
           <tr class="${selected}" data-id="${task.id}">
             <td class="id">${task.id}</td>
@@ -261,7 +264,7 @@
               <span class="chip type-${task.type}"><span class="swatch"></span>${TYPE_LABEL[task.type]}</span>
             </td>
             <td>
-              <span class="chip status-${task.status}">${STATUS_LABEL[task.status]}</span>
+              <span class="chip status-${statusClass}">${task.status}</span>
             </td>
             <td>
               <div class="owner">
@@ -274,8 +277,8 @@
             </td>
             <td class="col-xfer">${transferCell(task)}</td>
             <td>
-              <div class="meet-name">${meet.title}</div>
-              <div class="meet-time">${fmtStamp(meet.when)} · ${meet.room}</div>
+              <div class="meet-name">${meet ? meet.title : "无关联会议"}</div>
+              <div class="meet-time">${meet ? `${fmtStamp(meet.when)} · ${meet.room}` : "—"}</div>
             </td>
           </tr>
         `;
@@ -286,11 +289,12 @@
       .map((task) => {
         const owner = person(task.owner);
         const selected = state.selected === task.id ? " is-selected" : "";
+        const statusClass = STATUS_CLASS[task.status] || "pending";
         return `
           <article class="card${selected}" data-id="${task.id}">
             <div class="card-top">
               <span class="id">${task.id}</span>
-              <span class="chip status-${task.status}">${STATUS_LABEL[task.status]}</span>
+              <span class="chip status-${statusClass}">${task.status}</span>
               <span class="chip type-${task.type}"><span class="swatch"></span>${TYPE_LABEL[task.type]}</span>
             </div>
             ${transferCell(task)}
@@ -304,12 +308,14 @@
 
   function openDrawer(id) {
     const task = data.tasks.find((t) => t.id === id);
-    if (!task) return;
+    if (!task || !els.drawer) return;
     state.selected = id;
     const owner = person(task.owner);
     const next = person(task.nextTransferTo);
     const meet = meeting(task.meeting);
     const tone = transferTone(task);
+    const statusClass = STATUS_CLASS[task.status] || "pending";
+    const when = task.status === "已完成" ? "已结束" : task.nextLabel || fmtStamp(task.nextTransferAt);
 
     els.drawer.classList.add("is-open");
     els.backdrop.classList.add("is-open");
@@ -317,56 +323,39 @@
     els.drawer.innerHTML = `
       <div class="drawer-head">
         <span class="id">${task.id}</span>
-        <span class="chip status-${task.status}">${STATUS_LABEL[task.status]}</span>
-        <button class="filter-chip" id="close-drawer" type="button">Close</button>
+        <span class="chip status-${statusClass}">${task.status}</span>
+        <button class="filter-chip" id="close-drawer" type="button">关闭</button>
       </div>
       <div class="drawer-body">
         <h2 class="drawer-title">${task.title}</h2>
         <div class="xfer-hero is-${tone}">
-          <div class="xfer-hero-k">Next transfer time</div>
-          <div class="xfer-hero-v">${fmtStamp(task.nextTransferAt)}</div>
-          <div class="xfer-rel">${relativeTransfer(task)} · hand to ${next.name} (${next.role})</div>
+          <div class="xfer-hero-k">下次流转时间</div>
+          <div class="xfer-hero-v">${when}</div>
+          <div class="xfer-rel">${relativeTransfer(task)} · 交给 ${next.name}（${next.role}）</div>
         </div>
         <div class="meta-grid">
           <div class="meta-cell">
-            <div class="meta-k">Owner</div>
+            <div class="meta-k">负责人</div>
             <div class="meta-v who">${avatarHtml(task.owner)} ${owner.name}</div>
           </div>
           <div class="meta-cell">
-            <div class="meta-k">Type</div>
+            <div class="meta-k">类型</div>
             <div class="meta-v">${TYPE_LABEL[task.type]}</div>
           </div>
           <div class="meta-cell span">
-            <div class="meta-k">Current action</div>
+            <div class="meta-k">当前动作</div>
             <div class="meta-v">${task.action}</div>
           </div>
           <div class="meta-cell">
-            <div class="meta-k">Meeting</div>
-            <div class="meta-v">${meet.title}</div>
+            <div class="meta-k">会议</div>
+            <div class="meta-v">${meet ? meet.title : "无关联会议"}</div>
           </div>
           <div class="meta-cell">
-            <div class="meta-k">When / room</div>
-            <div class="meta-v">${fmtStamp(meet.when)} · ${meet.room}</div>
+            <div class="meta-k">时间 / 地点</div>
+            <div class="meta-v">${meet ? `${fmtStamp(meet.when)} · ${meet.room}` : "—"}</div>
           </div>
         </div>
-        <p class="notes">${task.notes}</p>
-        <div class="nav-label" style="margin:0 0 8px">Transfer trail</div>
-        <div class="trail">
-          ${task.trail
-            .map((item) => {
-              const who = person(item.who);
-              return `
-                <div class="trail-item">
-                  ${avatarHtml(item.who)}
-                  <div>
-                    <div class="trail-text"><b>${who.name}</b> — ${item.text}</div>
-                    <div class="trail-meta">${fmtStamp(item.at)}</div>
-                  </div>
-                </div>
-              `;
-            })
-            .join("")}
-        </div>
+        <p class="notes">${task.result || "暂无补充说明。"}</p>
       </div>
     `;
     document.getElementById("close-drawer").addEventListener("click", closeDrawer);
@@ -375,10 +364,17 @@
 
   function closeDrawer() {
     state.selected = null;
-    els.drawer.classList.remove("is-open");
-    els.backdrop.classList.remove("is-open");
-    els.drawer.setAttribute("aria-hidden", "true");
+    if (els.drawer) {
+      els.drawer.classList.remove("is-open");
+      els.drawer.setAttribute("aria-hidden", "true");
+    }
+    if (els.backdrop) els.backdrop.classList.remove("is-open");
     renderRows();
+  }
+
+  function closeMobileNav() {
+    if (els.sidebar) els.sidebar.classList.remove("is-open");
+    if (els.scrim) els.scrim.classList.remove("is-open");
   }
 
   function bind() {
@@ -412,10 +408,12 @@
       });
     });
 
-    els.search.addEventListener("input", () => {
-      state.query = els.search.value;
-      renderRows();
-    });
+    if (els.search) {
+      els.search.addEventListener("input", () => {
+        state.query = els.search.value;
+        renderRows();
+      });
+    }
 
     els.rows.addEventListener("click", (e) => {
       const row = e.target.closest("tr[data-id]");
@@ -427,48 +425,44 @@
       if (card) openDrawer(card.dataset.id);
     });
 
-    els.backdrop.addEventListener("click", closeDrawer);
-    els.menu.addEventListener("click", () => {
-      els.sidebar.classList.add("is-open");
-      els.scrim.classList.add("is-open");
-    });
-    els.scrim.addEventListener("click", closeMobileNav);
+    if (els.backdrop) els.backdrop.addEventListener("click", closeDrawer);
+    if (els.menu) {
+      els.menu.addEventListener("click", () => {
+        els.sidebar.classList.add("is-open");
+        els.scrim.classList.add("is-open");
+      });
+    }
+    if (els.scrim) els.scrim.addEventListener("click", closeMobileNav);
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "/" && document.activeElement !== els.search) {
         e.preventDefault();
-        els.search.focus();
+        if (els.search) els.search.focus();
       }
       if (e.key === "Escape") {
         closeDrawer();
         closeMobileNav();
-        els.search.blur();
-      }
-      if ((e.key === "j" || e.key === "k") && document.activeElement !== els.search) {
-        const tasks = visibleTasks();
-        if (!tasks.length) return;
-        const idx = Math.max(0, tasks.findIndex((t) => t.id === state.selected));
-        const next = e.key === "j" ? Math.min(tasks.length - 1, (state.selected ? idx + 1 : 0)) : Math.max(0, idx - 1);
-        openDrawer(tasks[next].id);
+        if (els.search) els.search.blur();
       }
     });
-  }
-
-  function closeMobileNav() {
-    els.sidebar.classList.remove("is-open");
-    els.scrim.classList.remove("is-open");
   }
 
   function bootViewer() {
     const v = data.viewer;
     const av = document.getElementById("viewer-avatar");
-    av.textContent = person(v.id).initials;
-    av.setAttribute("style", avatarStyle(v.id));
-    document.getElementById("viewer-name").textContent = v.name;
-    document.getElementById("viewer-role").textContent = v.role;
-    const clock = fmtClock(now);
-    document.getElementById("clock-date").textContent = clock.date;
-    document.getElementById("clock-time").textContent = clock.time;
+    if (av) {
+      av.textContent = v.initials;
+      av.setAttribute("style", avatarStyle(v.id));
+    }
+    const name = document.getElementById("viewer-name");
+    const role = document.getElementById("viewer-role");
+    if (name) name.textContent = v.name;
+    if (role) role.textContent = v.role;
+    const clock = tzParts(now);
+    const dateEl = document.getElementById("clock-date");
+    const timeEl = document.getElementById("clock-time");
+    if (dateEl) dateEl.textContent = `${clock.month}月${clock.day}日 ${clock.weekday}`;
+    if (timeEl) timeEl.textContent = `${clock.hour}:${clock.minute}`;
   }
 
   bootViewer();

@@ -1,6 +1,6 @@
-# Dense Operations Console
+# 高密度调度台
 
-Internal dispatch board for 启航零售 (Qihang Retail): meetings, follow-ups, and transfers.
+华东零售内部调度台：会议、跟进与任务流转。界面与任务数据均为简体中文。
 
 ## Preview
 
