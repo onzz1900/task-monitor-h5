@@ -3,25 +3,25 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>运营桌面 · 华东零售</title>
-    <meta name="description" content="华东零售内部运营桌面：会议、跟进与任务流转。" />
+    <title>任务流转中心</title>
+    <meta name="description" content="任务流转中心 / Mission Transfer Center：电商采集、监控与报表任务的流转监视。" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236d7cff'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-size='13' font-family='Arial' fill='%23070b12'%3E运%3C/text%3E%3C/svg%3E" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236d7cff'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-size='13' font-family='Arial' fill='%23070b12'%3E转%3C/text%3E%3C/svg%3E" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <div class="app">
       <aside class="sidebar" id="sidebar">
         <div class="brand">
-          <div class="mark" aria-hidden="true">运</div>
+          <div class="mark" aria-hidden="true">转</div>
           <div class="brand-copy">
-            <div class="brand-name">运营桌面</div>
-            <div class="brand-sub">Operating Desktop</div>
+            <div class="brand-name">任务流转中心</div>
+            <div class="brand-sub">Mission Transfer Center</div>
           </div>
         </div>
         <nav class="nav" aria-label="队列">
@@ -39,23 +39,22 @@
             <span class="nav-count" data-count="blocked">1</span>
           </button>
           <button class="nav-item" data-view="done">
-            <span class="dot" style="color: #3dd68c"></span> 本周已完成
+            <span class="dot" style="color: #3dd68c"></span> 本轮已完成
             <span class="nav-count" data-count="done">1</span>
           </button>
           <div class="nav-label">类型</div>
-          <button class="nav-item" data-view="type:review"><span class="dot" style="color: #9aa4ff"></span> 审阅</button>
-          <button class="nav-item" data-view="type:seal"><span class="dot" style="color: #e8d48b"></span> 用印</button>
-          <button class="nav-item" data-view="type:audit"><span class="dot" style="color: #5eead4"></span> 门店巡检</button>
-          <button class="nav-item" data-view="type:launch"><span class="dot" style="color: #7dd3fc"></span> 上市排期</button>
-          <button class="nav-item" data-view="type:aftersales"><span class="dot" style="color: #fb923c"></span> 售后</button>
-          <button class="nav-item" data-view="type:weekly"><span class="dot" style="color: #c4b5fd"></span> 周行动</button>
-          <button class="nav-item" data-view="type:recon"><span class="dot" style="color: #fda4af"></span> 对账</button>
+          <button class="nav-item" data-view="type:review"><span class="dot" style="color: #9aa4ff"></span> 评价采集</button>
+          <button class="nav-item" data-view="type:chat"><span class="dot" style="color: #5eead4"></span> 聊天采集</button>
+          <button class="nav-item" data-view="type:draw"><span class="dot" style="color: #e8d48b"></span> 绘图采集</button>
+          <button class="nav-item" data-view="type:conv"><span class="dot" style="color: #7dd3fc"></span> 转化率</button>
+          <button class="nav-item" data-view="type:monitor"><span class="dot" style="color: #fb923c"></span> 数据监控</button>
+          <button class="nav-item" data-view="type:report"><span class="dot" style="color: #c4b5fd"></span> 报表</button>
         </nav>
         <div class="sidebar-foot">
           <span class="avatar" id="viewer-avatar" style="background:hsla(320,55%,18%,1);color:hsla(320,80%,78%,1)">周</span>
           <div>
             <div class="owner-name" id="viewer-name">周琪</div>
-            <div class="task-region" id="viewer-role">运营办</div>
+            <div class="task-region" id="viewer-role">值班</div>
           </div>
         </div>
       </aside>
@@ -63,8 +62,8 @@
       <header class="topbar">
         <button class="icon-btn" id="menu-btn" aria-label="打开导航">☰</button>
         <div class="crumb">
-          <span class="crumb-kicker">内部</span>
-          <span class="crumb-title">运营桌面</span>
+          <span class="crumb-kicker">监视</span>
+          <span class="crumb-title">任务流转中心</span>
         </div>
         <label class="search">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -80,33 +79,33 @@
         </div>
       </header>
 
-      <section class="stats" aria-label="会议统计">
+      <section class="stats" aria-label="流转统计">
         <article class="stat is-accent">
-          <div class="stat-label">今日会议</div>
+          <div class="stat-label">运行中</div>
           <div class="stat-row">
-            <span class="stat-value" id="stat-today">2</span>
-            <span class="stat-meta" id="stat-today-meta">复盘 · 上市</span>
-          </div>
-        </article>
-        <article class="stat">
-          <div class="stat-label">本周会议</div>
-          <div class="stat-row">
-            <span class="stat-value" id="stat-week">5</span>
-            <span class="stat-meta">周一至周五</span>
+            <span class="stat-value" id="stat-running">3</span>
+            <span class="stat-meta">正在采集 / 监控</span>
           </div>
         </article>
         <article class="stat is-warn">
-          <div class="stat-label">待跟进</div>
+          <div class="stat-label">待流转</div>
           <div class="stat-row">
-            <span class="stat-value" id="stat-pending">4</span>
-            <span class="stat-meta">流转 / 阻塞 / 等待</span>
+            <span class="stat-value" id="stat-waiting">2</span>
+            <span class="stat-meta">等下一手</span>
+          </div>
+        </article>
+        <article class="stat is-hot">
+          <div class="stat-label">已阻塞</div>
+          <div class="stat-row">
+            <span class="stat-value" id="stat-blocked">1</span>
+            <span class="stat-meta">需排除</span>
           </div>
         </article>
         <article class="stat is-ok">
-          <div class="stat-label">已完成</div>
+          <div class="stat-label">本轮已完成</div>
           <div class="stat-row">
             <span class="stat-value" id="stat-done">1</span>
-            <span class="stat-meta">本周关闭</span>
+            <span class="stat-meta">已归档</span>
           </div>
         </article>
       </section>
@@ -117,9 +116,9 @@
           <button data-window="today">今天</button>
           <button data-window="overdue">已超时</button>
         </div>
-        <button class="filter-chip" data-status="流转中">流转中</button>
-        <button class="filter-chip" data-status="进行中">进行中</button>
-        <button class="filter-chip" data-status="等待中">等待中</button>
+        <button class="filter-chip" data-status="运行中">运行中</button>
+        <button class="filter-chip" data-status="待流转">待流转</button>
+        <button class="filter-chip" data-status="已阻塞">已阻塞</button>
         <span class="spacer"></span>
         <span class="result-count" id="result-count">7 条</span>
       </div>
@@ -130,58 +129,124 @@
             <thead>
               <tr>
                 <th class="col-id">编号</th>
-                <th>任务</th>
+                <th>任务 / 点位</th>
                 <th class="col-type">类型</th>
                 <th class="col-status">状态</th>
                 <th class="col-owner">负责人 / 当前动作</th>
                 <th class="col-xfer">下次流转时间</th>
-                <th class="col-meet">会议</th>
+                <th class="col-run">上次运行结果</th>
               </tr>
             </thead>
             <tbody id="rows">
-              <tr data-id="OPS-4827">
-                <td class="id">OPS-4827</td>
+              <tr data-id="TF-2108">
+                <td class="id">TF-2108</td>
                 <td>
-                  <div class="task-title">华东大客户季度复盘</div>
-                  <div class="task-region">华东 · 大客户部</div>
+                  <div class="task-title">聊天记录评价与数据采集</div>
+                  <div class="task-region">天猫 + 京东 · 20 个点位</div>
+                  <div class="points"><span class="points-num">12/20</span> <span class="points-label">点位</span></div>
+                  <div class="points-bar" aria-hidden="true"><i style="width:60%"></i></div>
                 </td>
-                <td><span class="chip type-review"><span class="swatch"></span>审阅</span></td>
-                <td><span class="chip status-in-review">进行中</span></td>
+                <td><span class="chip type-chat"><span class="swatch"></span>聊天采集</span></td>
+                <td><span class="chip status-in-review">运行中</span></td>
                 <td>
                   <div class="owner">
-                    <span class="avatar" style="background:hsla(230,55%,18%,1);color:hsla(230,80%,78%,1)">李</span>
+                    <span class="avatar" style="background:hsla(190,55%,18%,1);color:hsla(190,80%,78%,1)">韩</span>
                     <div>
-                      <div class="owner-name">李敏 · 大客户</div>
-                      <div class="owner-action">整理会议纪要待确认</div>
+                      <div class="owner-name">韩澄 · 客服数据</div>
+                      <div class="owner-action">正在拉取天猫旗舰店会话</div>
                     </div>
                   </div>
                 </td>
                 <td class="col-xfer">
                   <div class="xfer is-now">
                     <div class="xfer-kicker">下次流转</div>
-                    <div class="xfer-when">今天 10:30</div>
-                    <div class="xfer-rel">48分钟后 → 周琪</div>
+                    <div class="xfer-when">今天 10:15</div>
+                    <div class="xfer-rel">33分钟后 → 周琪</div>
                   </div>
                 </td>
-                <td>
-                  <div class="meet-name">华东大客户季度复盘会</div>
-                  <div class="meet-time">今天 09:00 · 总部 12F</div>
+                <td class="col-run">
+                  <div class="last-run is-ok">成功 · 采集 1,284 条会话</div>
+                  <div class="last-run-at">今天 09:10</div>
                 </td>
               </tr>
-              <tr data-id="OPS-4821">
-                <td class="id">OPS-4821</td>
+              <tr data-id="TF-2104">
+                <td class="id">TF-2104</td>
                 <td>
-                  <div class="task-title">供应商合同用印</div>
-                  <div class="task-region">总部 · 用印台</div>
+                  <div class="task-title">旗舰店评价采集</div>
+                  <div class="task-region">天猫旗舰 · 12 个点位</div>
+                  <div class="points"><span class="points-num">8/12</span> <span class="points-label">点位</span></div>
+                  <div class="points-bar" aria-hidden="true"><i style="width:67%"></i></div>
                 </td>
-                <td><span class="chip type-seal"><span class="swatch"></span>用印</span></td>
-                <td><span class="chip status-transferring">流转中</span></td>
+                <td><span class="chip type-review"><span class="swatch"></span>评价采集</span></td>
+                <td><span class="chip status-in-review">运行中</span></td>
                 <td>
                   <div class="owner">
-                    <span class="avatar" style="background:hsla(265,55%,18%,1);color:hsla(265,80%,78%,1)">张</span>
+                    <span class="avatar" style="background:hsla(160,55%,18%,1);color:hsla(160,80%,78%,1)">林</span>
                     <div>
-                      <div class="owner-name">张凯 · 法务</div>
-                      <div class="owner-action">法务审批中</div>
+                      <div class="owner-name">林晓禾 · 评价组</div>
+                      <div class="owner-action">回写近 24 小时新增评价</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="col-xfer">
+                  <div class="xfer is-later">
+                    <div class="xfer-kicker">下次流转</div>
+                    <div class="xfer-when">今天 11:40</div>
+                    <div class="xfer-rel">1小时58分后 → 赵启明</div>
+                  </div>
+                </td>
+                <td class="col-run">
+                  <div class="last-run is-ok">成功 · 入库 936 条评价</div>
+                  <div class="last-run-at">今天 08:55</div>
+                </td>
+              </tr>
+              <tr data-id="TF-2112">
+                <td class="id">TF-2112</td>
+                <td>
+                  <div class="task-title">店铺转化率监控</div>
+                  <div class="task-region">全渠道漏斗 · 18 个点位</div>
+                  <div class="points"><span class="points-num">15/18</span> <span class="points-label">点位</span></div>
+                  <div class="points-bar" aria-hidden="true"><i style="width:83%"></i></div>
+                </td>
+                <td><span class="chip type-conv"><span class="swatch"></span>转化率</span></td>
+                <td><span class="chip status-in-review">运行中</span></td>
+                <td>
+                  <div class="owner">
+                    <span class="avatar" style="background:hsla(38,55%,18%,1);color:hsla(38,80%,78%,1)">王</span>
+                    <div>
+                      <div class="owner-name">王倩 · 转化</div>
+                      <div class="owner-action">核对主搜与购物车漏斗</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="col-xfer">
+                  <div class="xfer is-later">
+                    <div class="xfer-kicker">下次流转</div>
+                    <div class="xfer-when">今天 12:20</div>
+                    <div class="xfer-rel">2小时38分后 → 周琪</div>
+                  </div>
+                </td>
+                <td class="col-run">
+                  <div class="last-run is-ok">成功 · 全站转化率 3.6%</div>
+                  <div class="last-run-at">今天 09:20</div>
+                </td>
+              </tr>
+              <tr data-id="TF-2099">
+                <td class="id">TF-2099</td>
+                <td>
+                  <div class="task-title">商详绘图记录采集</div>
+                  <div class="task-region">主图/商详 · 10 个点位</div>
+                  <div class="points"><span class="points-num">6/10</span> <span class="points-label">点位</span></div>
+                  <div class="points-bar" aria-hidden="true"><i style="width:60%"></i></div>
+                </td>
+                <td><span class="chip type-draw"><span class="swatch"></span>绘图采集</span></td>
+                <td><span class="chip status-waiting">待流转</span></td>
+                <td>
+                  <div class="owner">
+                    <span class="avatar" style="background:hsla(145,55%,18%,1);color:hsla(145,80%,78%,1)">沈</span>
+                    <div>
+                      <div class="owner-name">沈见远 · 设计采集</div>
+                      <div class="owner-action">等待设计组回传剩余 4 店</div>
                     </div>
                   </div>
                 </td>
@@ -189,144 +254,92 @@
                   <div class="xfer is-later">
                     <div class="xfer-kicker">下次流转</div>
                     <div class="xfer-when">今天 14:00</div>
-                    <div class="xfer-rel">4小时18分后 → 财务</div>
+                    <div class="xfer-rel">4小时18分后 → 林晓禾</div>
                   </div>
                 </td>
-                <td>
-                  <div class="meet-name">供应商合同评审</div>
-                  <div class="meet-time">周一 16:00 · 法务隔间</div>
+                <td class="col-run">
+                  <div class="last-run is-ok">成功 · 回传 6 店设计稿</div>
+                  <div class="last-run-at">今天 07:40</div>
                 </td>
               </tr>
-              <tr data-id="OPS-4816">
-                <td class="id">OPS-4816</td>
+              <tr data-id="TF-2116">
+                <td class="id">TF-2116</td>
                 <td>
-                  <div class="task-title">南京新街口店巡检整改</div>
-                  <div class="task-region">华东 · 南京新街口</div>
+                  <div class="task-title">日报报表任务</div>
+                  <div class="task-region">华东 / 华南 / 全国 · 3 个点位</div>
+                  <div class="points"><span class="points-num">1/3</span> <span class="points-label">点位</span></div>
+                  <div class="points-bar" aria-hidden="true"><i style="width:33%"></i></div>
                 </td>
-                <td><span class="chip type-audit"><span class="swatch"></span>巡检</span></td>
-                <td><span class="chip status-pending">待跟进</span></td>
+                <td><span class="chip type-report"><span class="swatch"></span>报表</span></td>
+                <td><span class="chip status-waiting">待流转</span></td>
                 <td>
                   <div class="owner">
-                    <span class="avatar" style="background:hsla(160,55%,18%,1);color:hsla(160,80%,78%,1)">陈</span>
+                    <span class="avatar" style="background:hsla(200,55%,18%,1);color:hsla(200,80%,78%,1)">苏</span>
                     <div>
-                      <div class="owner-name">陈店长 · 门店</div>
-                      <div class="owner-action">回传整改照片</div>
+                      <div class="owner-name">苏晚 · 报表</div>
+                      <div class="owner-action">等华南场次收口后再出全国表</div>
                     </div>
                   </div>
                 </td>
                 <td class="col-xfer">
                   <div class="xfer is-later">
                     <div class="xfer-kicker">下次流转</div>
-                    <div class="xfer-when">明天 09:00</div>
-                    <div class="xfer-rel">23小时18分后 → 周琪</div>
+                    <div class="xfer-when">今天 16:00</div>
+                    <div class="xfer-rel">6小时18分后 → 周琪</div>
                   </div>
                 </td>
-                <td>
-                  <div class="meet-name">门店巡检复盘</div>
-                  <div class="meet-time">周一 15:00 · 华东作战室</div>
+                <td class="col-run">
+                  <div class="last-run is-ok">成功 · 已出华东日报</div>
+                  <div class="last-run-at">今天 08:10</div>
                 </td>
               </tr>
-              <tr data-id="OPS-4830">
-                <td class="id">OPS-4830</td>
+              <tr data-id="TF-2088">
+                <td class="id">TF-2088</td>
                 <td>
-                  <div class="task-title">新品上市排期对齐</div>
-                  <div class="task-region">总部 · 电商</div>
+                  <div class="task-title">实时成交数据监控</div>
+                  <div class="task-region">成交看板 · 16 个点位</div>
+                  <div class="points"><span class="points-num">4/16</span> <span class="points-label">点位</span></div>
+                  <div class="points-bar" aria-hidden="true"><i style="width:25%"></i></div>
                 </td>
-                <td><span class="chip type-launch"><span class="swatch"></span>上市</span></td>
-                <td><span class="chip status-in-review">进行中</span></td>
-                <td>
-                  <div class="owner">
-                    <span class="avatar" style="background:hsla(38,55%,18%,1);color:hsla(38,80%,78%,1)">王</span>
-                    <div>
-                      <div class="owner-name">王倩 · 运营</div>
-                      <div class="owner-action">约齐渠道会</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="col-xfer">
-                  <div class="xfer is-later">
-                    <div class="xfer-kicker">下次流转</div>
-                    <div class="xfer-when">今天 16:30</div>
-                    <div class="xfer-rel">6小时48分后 → 李敏</div>
-                  </div>
-                </td>
-                <td>
-                  <div class="meet-name">渠道上市对齐会</div>
-                  <div class="meet-time">今天 11:00 · 电商工作室</div>
-                </td>
-              </tr>
-              <tr data-id="OPS-4809">
-                <td class="id">OPS-4809</td>
-                <td>
-                  <div class="task-title">售后升级单 #4821</div>
-                  <div class="task-region">总部 · 售后</div>
-                </td>
-                <td><span class="chip type-aftersales"><span class="swatch"></span>售后</span></td>
+                <td><span class="chip type-monitor"><span class="swatch"></span>数据监控</span></td>
                 <td><span class="chip status-blocked">已阻塞</span></td>
                 <td>
                   <div class="owner">
-                    <span class="avatar" style="background:hsla(200,55%,18%,1);color:hsla(200,80%,78%,1)">质</span>
+                    <span class="avatar" style="background:hsla(48,55%,18%,1);color:hsla(48,80%,78%,1)">赵</span>
                     <div>
-                      <div class="owner-name">质检 · 质量</div>
-                      <div class="owner-action">等责任判定</div>
+                      <div class="owner-name">赵启明 · 数据监控</div>
+                      <div class="owner-action">京东订单接口超时，等待重试窗口</div>
                     </div>
                   </div>
                 </td>
                 <td class="col-xfer">
                   <div class="xfer is-later">
                     <div class="xfer-kicker">下次流转</div>
-                    <div class="xfer-when">明天 11:00</div>
-                    <div class="xfer-rel">25小时18分后 → 财务</div>
+                    <div class="xfer-when">明天 09:30</div>
+                    <div class="xfer-rel">23小时48分后 → 苏晚</div>
                   </div>
                 </td>
-                <td>
-                  <div class="meet-name">无关联会议</div>
-                  <div class="meet-time">—</div>
+                <td class="col-run">
+                  <div class="last-run is-fail">失败 · 京东接口超时</div>
+                  <div class="last-run-at">今天 09:05</div>
                 </td>
               </tr>
-              <tr data-id="OPS-4833">
-                <td class="id">OPS-4833</td>
+              <tr data-id="TF-2071">
+                <td class="id">TF-2071</td>
                 <td>
-                  <div class="task-title">渠道费用对账 8 月</div>
-                  <div class="task-region">总部 · 财务</div>
+                  <div class="task-title">周报报表任务</div>
+                  <div class="task-region">周报 · 3 个点位</div>
+                  <div class="points"><span class="points-num">3/3</span> <span class="points-label">点位</span></div>
+                  <div class="points-bar" aria-hidden="true"><i style="width:100%"></i></div>
                 </td>
-                <td><span class="chip type-recon"><span class="swatch"></span>对账</span></td>
-                <td><span class="chip status-waiting">等待中</span></td>
-                <td>
-                  <div class="owner">
-                    <span class="avatar" style="background:hsla(48,55%,18%,1);color:hsla(48,80%,78%,1)">财</span>
-                    <div>
-                      <div class="owner-name">财务 · 财务</div>
-                      <div class="owner-action">待回传差异表</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="col-xfer">
-                  <div class="xfer is-later">
-                    <div class="xfer-kicker">下次流转</div>
-                    <div class="xfer-when">周四 15:00</div>
-                    <div class="xfer-rel">2天5小时后 → 周琪</div>
-                  </div>
-                </td>
-                <td>
-                  <div class="meet-name">无关联会议</div>
-                  <div class="meet-time">—</div>
-                </td>
-              </tr>
-              <tr data-id="OPS-4798">
-                <td class="id">OPS-4798</td>
-                <td>
-                  <div class="task-title">周例会行动项回收</div>
-                  <div class="task-region">总部 · 运营办</div>
-                </td>
-                <td><span class="chip type-weekly"><span class="swatch"></span>周行动</span></td>
-                <td><span class="chip status-done">已完成</span></td>
+                <td><span class="chip type-report"><span class="swatch"></span>报表</span></td>
+                <td><span class="chip status-done">本轮已完成</span></td>
                 <td>
                   <div class="owner">
-                    <span class="avatar" style="background:hsla(320,55%,18%,1);color:hsla(320,80%,78%,1)">周</span>
+                    <span class="avatar" style="background:hsla(200,55%,18%,1);color:hsla(200,80%,78%,1)">苏</span>
                     <div>
-                      <div class="owner-name">周琪 · 运营办</div>
-                      <div class="owner-action">已关闭 7 项行动项</div>
+                      <div class="owner-name">苏晚 · 报表</div>
+                      <div class="owner-action">三份周报已归档</div>
                     </div>
                   </div>
                 </td>
@@ -334,115 +347,143 @@
                   <div class="xfer is-done">
                     <div class="xfer-kicker">下次流转</div>
                     <div class="xfer-when">已结束</div>
-                    <div class="xfer-rel">本周已关闭</div>
+                    <div class="xfer-rel">本轮已关闭</div>
                   </div>
                 </td>
-                <td>
-                  <div class="meet-name">周例会</div>
-                  <div class="meet-time">周一 09:30 · 飞书</div>
+                <td class="col-run">
+                  <div class="last-run is-ok">成功 · 已归档 3 份周报</div>
+                  <div class="last-run-at">周一 18:20</div>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
         <div class="cards" id="cards">
-          <article class="card" data-id="OPS-4827">
+          <article class="card" data-id="TF-2108">
             <div class="card-top">
-              <span class="id">OPS-4827</span>
-              <span class="chip status-in-review">进行中</span>
-              <span class="chip type-review"><span class="swatch"></span>审阅</span>
+              <span class="id">TF-2108</span>
+              <span class="chip status-in-review">运行中</span>
+              <span class="chip type-chat"><span class="swatch"></span>聊天采集</span>
             </div>
             <div class="xfer is-now">
               <div class="xfer-kicker">下次流转</div>
-              <div class="xfer-when">今天 10:30</div>
-              <div class="xfer-rel">48分钟后 → 周琪</div>
+              <div class="xfer-when">今天 10:15</div>
+              <div class="xfer-rel">33分钟后 → 周琪</div>
             </div>
-            <div class="card-title">华东大客户季度复盘</div>
-            <div class="card-owner">李敏 · 整理会议纪要待确认</div>
+            <div class="card-title">聊天记录评价与数据采集</div>
+            <div class="card-owner">韩澄 · 正在拉取天猫旗舰店会话</div>
+            <div class="card-meta">
+              <div class="points"><span class="points-num">12/20</span> <span class="points-label">点位</span></div>
+              <div class="last-run is-ok">成功 · 采集 1,284 条会话</div>
+            </div>
           </article>
-          <article class="card" data-id="OPS-4821">
+          <article class="card" data-id="TF-2104">
             <div class="card-top">
-              <span class="id">OPS-4821</span>
-              <span class="chip status-transferring">流转中</span>
-              <span class="chip type-seal"><span class="swatch"></span>用印</span>
+              <span class="id">TF-2104</span>
+              <span class="chip status-in-review">运行中</span>
+              <span class="chip type-review"><span class="swatch"></span>评价采集</span>
+            </div>
+            <div class="xfer is-later">
+              <div class="xfer-kicker">下次流转</div>
+              <div class="xfer-when">今天 11:40</div>
+              <div class="xfer-rel">1小时58分后 → 赵启明</div>
+            </div>
+            <div class="card-title">旗舰店评价采集</div>
+            <div class="card-owner">林晓禾 · 回写近 24 小时新增评价</div>
+            <div class="card-meta">
+              <div class="points"><span class="points-num">8/12</span> <span class="points-label">点位</span></div>
+              <div class="last-run is-ok">成功 · 入库 936 条评价</div>
+            </div>
+          </article>
+          <article class="card" data-id="TF-2112">
+            <div class="card-top">
+              <span class="id">TF-2112</span>
+              <span class="chip status-in-review">运行中</span>
+              <span class="chip type-conv"><span class="swatch"></span>转化率</span>
+            </div>
+            <div class="xfer is-later">
+              <div class="xfer-kicker">下次流转</div>
+              <div class="xfer-when">今天 12:20</div>
+              <div class="xfer-rel">2小时38分后 → 周琪</div>
+            </div>
+            <div class="card-title">店铺转化率监控</div>
+            <div class="card-owner">王倩 · 核对主搜与购物车漏斗</div>
+            <div class="card-meta">
+              <div class="points"><span class="points-num">15/18</span> <span class="points-label">点位</span></div>
+              <div class="last-run is-ok">成功 · 全站转化率 3.6%</div>
+            </div>
+          </article>
+          <article class="card" data-id="TF-2099">
+            <div class="card-top">
+              <span class="id">TF-2099</span>
+              <span class="chip status-waiting">待流转</span>
+              <span class="chip type-draw"><span class="swatch"></span>绘图采集</span>
             </div>
             <div class="xfer is-later">
               <div class="xfer-kicker">下次流转</div>
               <div class="xfer-when">今天 14:00</div>
-              <div class="xfer-rel">4小时18分后 → 财务</div>
+              <div class="xfer-rel">4小时18分后 → 林晓禾</div>
             </div>
-            <div class="card-title">供应商合同用印</div>
-            <div class="card-owner">张凯 · 法务审批中</div>
+            <div class="card-title">商详绘图记录采集</div>
+            <div class="card-owner">沈见远 · 等待设计组回传剩余 4 店</div>
+            <div class="card-meta">
+              <div class="points"><span class="points-num">6/10</span> <span class="points-label">点位</span></div>
+              <div class="last-run is-ok">成功 · 回传 6 店设计稿</div>
+            </div>
           </article>
-          <article class="card" data-id="OPS-4816">
+          <article class="card" data-id="TF-2116">
             <div class="card-top">
-              <span class="id">OPS-4816</span>
-              <span class="chip status-pending">待跟进</span>
-              <span class="chip type-audit"><span class="swatch"></span>巡检</span>
+              <span class="id">TF-2116</span>
+              <span class="chip status-waiting">待流转</span>
+              <span class="chip type-report"><span class="swatch"></span>报表</span>
             </div>
             <div class="xfer is-later">
               <div class="xfer-kicker">下次流转</div>
-              <div class="xfer-when">明天 09:00</div>
-              <div class="xfer-rel">23小时18分后 → 周琪</div>
+              <div class="xfer-when">今天 16:00</div>
+              <div class="xfer-rel">6小时18分后 → 周琪</div>
             </div>
-            <div class="card-title">南京新街口店巡检整改</div>
-            <div class="card-owner">陈店长 · 回传整改照片</div>
+            <div class="card-title">日报报表任务</div>
+            <div class="card-owner">苏晚 · 等华南场次收口后再出全国表</div>
+            <div class="card-meta">
+              <div class="points"><span class="points-num">1/3</span> <span class="points-label">点位</span></div>
+              <div class="last-run is-ok">成功 · 已出华东日报</div>
+            </div>
           </article>
-          <article class="card" data-id="OPS-4830">
+          <article class="card" data-id="TF-2088">
             <div class="card-top">
-              <span class="id">OPS-4830</span>
-              <span class="chip status-in-review">进行中</span>
-              <span class="chip type-launch"><span class="swatch"></span>上市</span>
-            </div>
-            <div class="xfer is-later">
-              <div class="xfer-kicker">下次流转</div>
-              <div class="xfer-when">今天 16:30</div>
-              <div class="xfer-rel">6小时48分后 → 李敏</div>
-            </div>
-            <div class="card-title">新品上市排期对齐</div>
-            <div class="card-owner">王倩 · 约齐渠道会</div>
-          </article>
-          <article class="card" data-id="OPS-4809">
-            <div class="card-top">
-              <span class="id">OPS-4809</span>
+              <span class="id">TF-2088</span>
               <span class="chip status-blocked">已阻塞</span>
-              <span class="chip type-aftersales"><span class="swatch"></span>售后</span>
+              <span class="chip type-monitor"><span class="swatch"></span>数据监控</span>
             </div>
             <div class="xfer is-later">
               <div class="xfer-kicker">下次流转</div>
-              <div class="xfer-when">明天 11:00</div>
-              <div class="xfer-rel">25小时18分后 → 财务</div>
+              <div class="xfer-when">明天 09:30</div>
+              <div class="xfer-rel">23小时48分后 → 苏晚</div>
             </div>
-            <div class="card-title">售后升级单 #4821</div>
-            <div class="card-owner">质检 · 等责任判定</div>
+            <div class="card-title">实时成交数据监控</div>
+            <div class="card-owner">赵启明 · 京东订单接口超时，等待重试窗口</div>
+            <div class="card-meta">
+              <div class="points"><span class="points-num">4/16</span> <span class="points-label">点位</span></div>
+              <div class="last-run is-fail">失败 · 京东接口超时</div>
+            </div>
           </article>
-          <article class="card" data-id="OPS-4833">
+          <article class="card" data-id="TF-2071">
             <div class="card-top">
-              <span class="id">OPS-4833</span>
-              <span class="chip status-waiting">等待中</span>
-              <span class="chip type-recon"><span class="swatch"></span>对账</span>
-            </div>
-            <div class="xfer is-later">
-              <div class="xfer-kicker">下次流转</div>
-              <div class="xfer-when">周四 15:00</div>
-              <div class="xfer-rel">2天5小时后 → 周琪</div>
-            </div>
-            <div class="card-title">渠道费用对账 8 月</div>
-            <div class="card-owner">财务 · 待回传差异表</div>
-          </article>
-          <article class="card" data-id="OPS-4798">
-            <div class="card-top">
-              <span class="id">OPS-4798</span>
-              <span class="chip status-done">已完成</span>
-              <span class="chip type-weekly"><span class="swatch"></span>周行动</span>
+              <span class="id">TF-2071</span>
+              <span class="chip status-done">本轮已完成</span>
+              <span class="chip type-report"><span class="swatch"></span>报表</span>
             </div>
             <div class="xfer is-done">
               <div class="xfer-kicker">下次流转</div>
               <div class="xfer-when">已结束</div>
-              <div class="xfer-rel">本周已关闭</div>
+              <div class="xfer-rel">本轮已关闭</div>
             </div>
-            <div class="card-title">周例会行动项回收</div>
-            <div class="card-owner">周琪 · 已关闭 7 项行动项</div>
+            <div class="card-title">周报报表任务</div>
+            <div class="card-owner">苏晚 · 三份周报已归档</div>
+            <div class="card-meta">
+              <div class="points"><span class="points-num">3/3</span> <span class="points-label">点位</span></div>
+              <div class="last-run is-ok">成功 · 已归档 3 份周报</div>
+            </div>
           </article>
         </div>
       </main>

@@ -1,38 +1,34 @@
 (function () {
-  const data = window.OPS_DESKTOP;
+  const data = window.TRANSFER_CENTER;
   if (!data || !Array.isArray(data.tasks) || !data.tasks.length) return;
 
   const now = new Date(data.now);
   const TZ = "Asia/Shanghai";
-  const FOLLOW = data.followStatuses || ["流转中", "待跟进", "已阻塞", "等待中"];
 
   const TYPE_LABEL = {
-    review: "审阅",
-    seal: "用印",
-    audit: "巡检",
-    launch: "上市",
-    aftersales: "售后",
-    weekly: "周行动",
-    recon: "对账",
+    review: "评价采集",
+    chat: "聊天采集",
+    draw: "绘图采集",
+    conv: "转化率",
+    monitor: "数据监控",
+    report: "报表",
   };
 
   const STATUS_CLASS = {
-    进行中: "in-review",
-    流转中: "transferring",
-    待跟进: "pending",
+    运行中: "in-review",
+    待流转: "waiting",
     已阻塞: "blocked",
-    等待中: "waiting",
-    已完成: "done",
+    本轮已完成: "done",
   };
 
   const AVATAR_HUE = {
-    limin: 230,
-    zhangkai: 265,
-    dianzhang: 160,
-    wangqian: 38,
-    zhijian: 200,
+    lin: 160,
+    han: 190,
+    shen: 145,
+    wang: 38,
+    zhao: 48,
+    su: 200,
     zhouqi: 320,
-    caiwu: 48,
   };
 
   const state = {
@@ -59,10 +55,6 @@
 
   function person(id) {
     return data.people[id] || { name: "—", role: "", initials: "·" };
-  }
-
-  function meeting(id) {
-    return data.meetings.find((m) => m.id === id) || null;
   }
 
   function avatarStyle(id) {
@@ -104,8 +96,7 @@
     if (Number.isNaN(d.getTime())) return fallback || "—";
     const p = tzParts(d);
     if (sameShanghaiDay(d, now)) return `今天 ${p.hour}:${p.minute}`;
-    const weekdays = { 周日: "周日", 周一: "周一", 周二: "周二", 周三: "周三", 周四: "周四", 周五: "周五", 周六: "周六" };
-    const wd = weekdays[p.weekday] || p.weekday;
+    const wd = p.weekday || "";
     return `${wd} ${p.hour}:${p.minute}`;
   }
 
@@ -114,7 +105,7 @@
   }
 
   function transferTone(task) {
-    if (task.status === "已完成") return "done";
+    if (task.status === "本轮已完成") return "done";
     const mins = minutesUntil(task.nextTransferAt);
     if (mins < 0) return "over";
     if (mins <= 120) return "now";
@@ -122,7 +113,7 @@
   }
 
   function relativeTransfer(task) {
-    if (task.status === "已完成") return "已结束";
+    if (task.status === "本轮已完成") return "已结束";
     const mins = minutesUntil(task.nextTransferAt);
     const abs = Math.abs(mins);
     const h = Math.floor(abs / 60);
@@ -133,12 +124,8 @@
     return `${clock}后`;
   }
 
-  function isFollow(task) {
-    return FOLLOW.indexOf(task.status) !== -1;
-  }
-
   function isDueNow(task) {
-    if (task.status === "已完成") return false;
+    if (task.status === "本轮已完成") return false;
     return minutesUntil(task.nextTransferAt) <= 120;
   }
 
@@ -147,14 +134,16 @@
     if (view === "all" || view === "open") return true;
     if (view === "due-now") return isDueNow(task);
     if (view === "blocked") return task.status === "已阻塞";
-    if (view === "done") return task.status === "已完成";
+    if (view === "done") return task.status === "本轮已完成";
+    if (view === "running") return task.status === "运行中";
+    if (view === "waiting") return task.status === "待流转";
     if (view.startsWith("type:")) return task.type === view.slice(5);
     return true;
   }
 
   function matchesWindow(task) {
     if (state.window === "all") return true;
-    if (task.status === "已完成") return state.window !== "overdue";
+    if (task.status === "本轮已完成") return state.window !== "overdue";
     const tone = transferTone(task);
     if (state.window === "overdue") return tone === "over";
     if (state.window === "today") return sameShanghaiDay(new Date(task.nextTransferAt), now);
@@ -165,16 +154,15 @@
     const q = state.query.trim().toLowerCase();
     if (!q) return true;
     const owner = person(task.owner);
-    const meet = meeting(task.meeting);
     const hay = [
       task.id,
       task.title,
       task.action,
-      task.region,
+      task.channel,
+      task.lastRunText,
       TYPE_LABEL[task.type],
       task.status,
       owner.name,
-      meet && meet.title,
     ]
       .filter(Boolean)
       .join(" ")
@@ -187,20 +175,19 @@
       .filter((t) => matchesView(t) && matchesWindow(t) && (!state.status || t.status === state.status) && matchesQuery(t))
       .slice()
       .sort((a, b) => {
-        if (a.status === "已完成" && b.status !== "已完成") return 1;
-        if (b.status === "已完成" && a.status !== "已完成") return -1;
+        if (a.status === "本轮已完成" && b.status !== "本轮已完成") return 1;
+        if (b.status === "本轮已完成" && a.status !== "本轮已完成") return -1;
         return new Date(a.nextTransferAt) - new Date(b.nextTransferAt);
       });
   }
 
   function deriveStats() {
-    const todayMeetings = data.tasks.filter((t) => t.meetingFlag === "today").length;
-    const weekMeetings = data.tasks.filter((t) => t.meetingFlag === "today" || t.meetingFlag === "week").length;
-    const pending = data.tasks.filter(isFollow).length;
-    const done = data.tasks.filter((t) => t.status === "已完成").length;
-    const soon = data.tasks.filter(isDueNow).length;
+    const running = data.tasks.filter((t) => t.status === "运行中").length;
+    const waiting = data.tasks.filter((t) => t.status === "待流转").length;
     const blocked = data.tasks.filter((t) => t.status === "已阻塞").length;
-    return { todayMeetings, weekMeetings, pending, done, soon, blocked };
+    const done = data.tasks.filter((t) => t.status === "本轮已完成").length;
+    const soon = data.tasks.filter(isDueNow).length;
+    return { running, waiting, blocked, done, soon };
   }
 
   function renderStats() {
@@ -209,9 +196,9 @@
       const el = document.getElementById(id);
       if (el) el.textContent = String(value);
     };
-    set("stat-today", stats.todayMeetings);
-    set("stat-week", stats.weekMeetings);
-    set("stat-pending", stats.pending);
+    set("stat-running", stats.running);
+    set("stat-waiting", stats.waiting);
+    set("stat-blocked", stats.blocked);
     set("stat-done", stats.done);
     const due = document.querySelector('[data-count="due-now"]');
     const open = document.querySelector('[data-count="open"]');
@@ -223,11 +210,30 @@
     if (done) done.textContent = String(stats.done);
   }
 
+  function pointsCell(task) {
+    const pct = task.pointsTotal ? Math.round((task.pointsDone / task.pointsTotal) * 100) : 0;
+    return `
+      <div class="points">
+        <span class="points-num">${task.pointsDone}/${task.pointsTotal}</span>
+        <span class="points-label">点位</span>
+      </div>
+      <div class="points-bar" aria-hidden="true"><i style="width:${pct}%"></i></div>
+    `;
+  }
+
+  function lastRunCell(task) {
+    const tone = task.lastRunOk ? "ok" : "fail";
+    return `
+      <div class="last-run is-${tone}">${task.lastRunText}</div>
+      <div class="last-run-at">${fmtStamp(task.lastRunAt)}</div>
+    `;
+  }
+
   function transferCell(task) {
     const tone = transferTone(task);
     const next = person(task.nextTransferTo);
-    const when = task.status === "已完成" ? "已结束" : task.nextLabel || fmtStamp(task.nextTransferAt);
-    const rel = task.status === "已完成" ? "本周已关闭" : `${relativeTransfer(task)} → ${next.name}`;
+    const when = task.status === "本轮已完成" ? "已结束" : task.nextLabel || fmtStamp(task.nextTransferAt);
+    const rel = task.status === "本轮已完成" ? "本轮已关闭" : `${relativeTransfer(task)} → ${next.name}`;
     return `
       <div class="xfer is-${tone}">
         <div class="xfer-kicker">下次流转</div>
@@ -250,7 +256,6 @@
     els.rows.innerHTML = tasks
       .map((task) => {
         const owner = person(task.owner);
-        const meet = meeting(task.meeting);
         const selected = state.selected === task.id ? " is-selected" : "";
         const statusClass = STATUS_CLASS[task.status] || "pending";
         return `
@@ -258,7 +263,8 @@
             <td class="id">${task.id}</td>
             <td>
               <div class="task-title">${task.title}</div>
-              <div class="task-region">${task.region}</div>
+              <div class="task-region">${task.channel}</div>
+              ${pointsCell(task)}
             </td>
             <td>
               <span class="chip type-${task.type}"><span class="swatch"></span>${TYPE_LABEL[task.type]}</span>
@@ -276,10 +282,7 @@
               </div>
             </td>
             <td class="col-xfer">${transferCell(task)}</td>
-            <td>
-              <div class="meet-name">${meet ? meet.title : "无关联会议"}</div>
-              <div class="meet-time">${meet ? `${fmtStamp(meet.when)} · ${meet.room}` : "—"}</div>
-            </td>
+            <td class="col-run">${lastRunCell(task)}</td>
           </tr>
         `;
       })
@@ -300,6 +303,10 @@
             ${transferCell(task)}
             <div class="card-title">${task.title}</div>
             <div class="card-owner">${owner.name} · ${task.action}</div>
+            <div class="card-meta">
+              ${pointsCell(task)}
+              ${lastRunCell(task)}
+            </div>
           </article>
         `;
       })
@@ -312,10 +319,10 @@
     state.selected = id;
     const owner = person(task.owner);
     const next = person(task.nextTransferTo);
-    const meet = meeting(task.meeting);
     const tone = transferTone(task);
     const statusClass = STATUS_CLASS[task.status] || "pending";
-    const when = task.status === "已完成" ? "已结束" : task.nextLabel || fmtStamp(task.nextTransferAt);
+    const when = task.status === "本轮已完成" ? "已结束" : task.nextLabel || fmtStamp(task.nextTransferAt);
+    const runTone = task.lastRunOk ? "ok" : "fail";
 
     els.drawer.classList.add("is-open");
     els.backdrop.classList.add("is-open");
@@ -335,6 +342,18 @@
         </div>
         <div class="meta-grid">
           <div class="meta-cell">
+            <div class="meta-k">点位进度</div>
+            <div class="meta-v">${task.pointsDone}/${task.pointsTotal} 点位</div>
+          </div>
+          <div class="meta-cell">
+            <div class="meta-k">最近运行</div>
+            <div class="meta-v">${fmtStamp(task.lastRunAt)}</div>
+          </div>
+          <div class="meta-cell span">
+            <div class="meta-k">上次运行结果</div>
+            <div class="meta-v last-run is-${runTone}">${task.lastRunText}</div>
+          </div>
+          <div class="meta-cell">
             <div class="meta-k">负责人</div>
             <div class="meta-v who">${avatarHtml(task.owner)} ${owner.name}</div>
           </div>
@@ -346,16 +365,8 @@
             <div class="meta-k">当前动作</div>
             <div class="meta-v">${task.action}</div>
           </div>
-          <div class="meta-cell">
-            <div class="meta-k">会议</div>
-            <div class="meta-v">${meet ? meet.title : "无关联会议"}</div>
-          </div>
-          <div class="meta-cell">
-            <div class="meta-k">时间 / 地点</div>
-            <div class="meta-v">${meet ? `${fmtStamp(meet.when)} · ${meet.room}` : "—"}</div>
-          </div>
         </div>
-        <p class="notes">${task.result || "暂无补充说明。"}</p>
+        <p class="notes">${task.pointsNote}</p>
       </div>
     `;
     document.getElementById("close-drawer").addEventListener("click", closeDrawer);

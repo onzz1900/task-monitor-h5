@@ -465,7 +465,7 @@ a {
 .col-status { width: 118px; }
 .col-owner { width: 280px; }
 .col-xfer { width: 210px; }
-.col-meet { width: 170px; }
+.col-run { width: 200px; }
 
 .table th.col-xfer,
 .table td.col-xfer {
@@ -525,12 +525,11 @@ a {
 }
 
 .chip.type-review .swatch { background: #9aa4ff; }
-.chip.type-seal .swatch { background: #e8d48b; }
-.chip.type-audit .swatch { background: #5eead4; }
-.chip.type-launch .swatch { background: #7dd3fc; }
-.chip.type-aftersales .swatch { background: #fb923c; }
-.chip.type-weekly .swatch { background: #c4b5fd; }
-.chip.type-recon .swatch { background: #fda4af; }
+.chip.type-chat .swatch { background: #5eead4; }
+.chip.type-draw .swatch { background: #e8d48b; }
+.chip.type-conv .swatch { background: #7dd3fc; }
+.chip.type-monitor .swatch { background: #fb923c; }
+.chip.type-report .swatch { background: #c4b5fd; }
 
 .chip.status-pending { color: #d7dbe8; }
 .chip.status-in-review { color: var(--accent-2); border-color: rgba(109, 124, 255, 0.35); background: var(--accent-dim); }
@@ -597,9 +596,53 @@ a {
 .xfer-rel {
   font-family: var(--mono);
   font-size: 10px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
   color: var(--ink-3);
+}
+
+.points {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.points-num {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.points-label {
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+.points-bar {
+  margin-top: 4px;
+  width: 88px;
+  height: 3px;
+  background: var(--surface-3);
+}
+
+.points-bar > i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.last-run {
+  font-size: 12px;
+}
+
+.last-run.is-ok { color: var(--green); }
+.last-run.is-fail { color: var(--red); }
+
+.last-run-at {
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 11px;
+  margin-top: 2px;
 }
 
 .xfer.is-now .xfer-when,
@@ -609,15 +652,12 @@ a {
 .xfer.is-done .xfer-when,
 .xfer.is-done .xfer-rel { color: var(--ink-3); }
 
-.meet-name {
-  font-size: 12px;
-}
-
-.meet-time {
-  color: var(--ink-3);
-  font-family: var(--mono);
-  font-size: 11px;
-  margin-top: 2px;
+.card-meta {
+  grid-column: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: baseline;
 }
 
 .cards {
@@ -901,7 +941,7 @@ a {
 
   .card .xfer {
     grid-column: 2;
-    grid-row: 1 / span 3;
+    grid-row: 1 / span 4;
     align-self: start;
     text-align: right;
     border-left: 1px solid var(--line);
@@ -913,6 +953,12 @@ a {
     color: var(--ink-2);
     font-size: 12px;
   }
+
+  .card-meta {
+    grid-column: 1;
+  }
+
+  .card-meta .points-bar { display: none; }
 }
 
 @media (max-width: 560px) {
