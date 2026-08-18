@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>青岚实业 · 任务流转看板</title>
+    <meta name="description" content="青岚实业内部任务流转看板：会议决议、跟进事项与下一次流转时间。" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <p class="brand-kicker">青岚实业 · 内部作战室</p>
+          <h1>任务流转看板</h1>
+        </div>
+      </div>
+      <div class="topbar-meta">
+        <p class="clock" id="live-clock">—</p>
+        <p class="shift">工作日 · 跟进班次 09:00–18:30</p>
+      </div>
+    </header>
+
+    <section class="stats" aria-label="会议与流转统计">
+      <article class="stat">
+        <p class="stat-label">本周会议</p>
+        <p class="stat-value" id="stat-meetings">0</p>
+        <p class="stat-hint" id="stat-meetings-hint">—</p>
+      </article>
+      <article class="stat">
+        <p class="stat-label">待闭环事项</p>
+        <p class="stat-value" id="stat-open">0</p>
+        <p class="stat-hint">会议决议尚未办结</p>
+      </article>
+      <article class="stat accent-transfer">
+        <p class="stat-label">今日待流转</p>
+        <p class="stat-value" id="stat-today">0</p>
+        <p class="stat-hint">下一次交接发生在今天</p>
+      </article>
+      <article class="stat accent-blocked">
+        <p class="stat-label">已阻塞</p>
+        <p class="stat-value" id="stat-blocked">0</p>
+        <p class="stat-hint">需升级协调</p>
+      </article>
+      <article class="stat accent-done">
+        <p class="stat-label">办结率</p>
+        <p class="stat-value" id="stat-rate">0%</p>
+        <p class="stat-hint" id="stat-rate-hint">本周事项</p>
+      </article>
+    </section>
+
+    <section class="meetings" aria-label="会议筛选">
+      <div class="meetings-head">
+        <h2>会议现场</h2>
+        <p>点选会议，只看该场决议的跟进与流转。</p>
+      </div>
+      <div class="meeting-rail" id="meeting-rail"></div>
+    </section>
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <label class="sr-only" for="search">搜索任务</label>
+        <input id="search" type="search" placeholder="搜索事项、负责人或当前动作" autocomplete="off" />
+      </div>
+      <div class="owner-filter" id="owner-filter"></div>
+    </div>
+
+    <nav class="lane-tabs" id="lane-tabs" aria-label="按状态查看"></nav>
+
+    <main class="board" id="board" tabindex="0" aria-label="按状态排列的任务看板"></main>
+
+    <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+    <aside class="drawer" id="drawer" hidden aria-labelledby="drawer-title">
+      <header class="drawer-head">
+        <p class="drawer-kicker" id="drawer-kicker">事项详情</p>
+        <h2 id="drawer-title"></h2>
+        <button type="button" class="icon-btn" id="drawer-close" aria-label="关闭详情">×</button>
+      </header>
+      <div class="drawer-body" id="drawer-body"></div>
+    </aside>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
