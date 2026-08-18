@@ -339,6 +339,10 @@ a {
 .stat-meta {
   color: var(--ink-3);
   font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .stat.is-warn .stat-value { color: var(--amber); }
@@ -584,6 +588,7 @@ a {
   font-weight: 500;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .xfer-rel {
@@ -834,6 +839,14 @@ a {
 
   .search { width: 42vw; }
   .clock .hide-sm { display: none; }
+
+  .toolbar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+  }
+
+  .toolbar::-webkit-scrollbar { display: none; }
 
   .stats {
     grid-template-columns: repeat(3, minmax(120px, 1fr));

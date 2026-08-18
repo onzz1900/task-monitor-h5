@@ -35,8 +35,10 @@
     rong: 48,
   };
 
+  const TZ = "Asia/Shanghai";
+
   const state = {
-    view: "due-now",
+    view: "open",
     window: "all",
     status: null,
     query: "",
@@ -73,28 +75,43 @@
     return `<span class="avatar" style="${avatarStyle(id)}" title="${p.name} · ${p.role}">${p.initials}</span>`;
   }
 
-  function pad(n) {
-    return String(n).padStart(2, "0");
+  function tzParts(d) {
+    const fmt = new Intl.DateTimeFormat("en-GB", {
+      timeZone: TZ,
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    });
+    const map = {};
+    for (const part of fmt.formatToParts(d)) {
+      if (part.type !== "literal") map[part.type] = part.value;
+    }
+    return map;
+  }
+
+  function sameShanghaiDay(a, b) {
+    const pa = tzParts(a);
+    const pb = tzParts(b);
+    return pa.year === pb.year && pa.month === pb.month && pa.day === pb.day;
   }
 
   function fmtClock(d) {
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const p = tzParts(d);
     return {
-      date: `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`,
-      time: `${pad(d.getHours())}:${pad(d.getMinutes())} ${data.timezone}`,
+      date: `${p.weekday} ${p.day} ${p.month}`,
+      time: `${p.hour}:${p.minute} ${data.timezone}`,
     };
   }
 
   function fmtStamp(iso) {
     const d = new Date(iso);
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const sameDay =
-      d.getFullYear() === now.getFullYear() &&
-      d.getMonth() === now.getMonth() &&
-      d.getDate() === now.getDate();
-    const day = sameDay ? "Today" : days[d.getDay()];
-    return `${day} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    const p = tzParts(d);
+    const day = sameShanghaiDay(d, now) ? "Today" : p.weekday;
+    return `${day} ${p.hour}:${p.minute}`;
   }
 
   function minutesUntil(iso) {
@@ -146,12 +163,7 @@
     const tone = transferTone(task);
     if (state.window === "overdue") return tone === "over" && isOpen(task);
     if (state.window === "today") {
-      const d = new Date(task.nextTransferAt);
-      return (
-        d.getFullYear() === now.getFullYear() &&
-        d.getMonth() === now.getMonth() &&
-        d.getDate() === now.getDate()
-      );
+      return sameShanghaiDay(new Date(task.nextTransferAt), now);
     }
     return true;
   }
@@ -191,9 +203,11 @@
     const over = data.tasks.filter((t) => isOpen(t) && minutesUntil(t.nextTransferAt) < 0);
 
     document.getElementById("stat-today").textContent = String(todayMeetings.length);
-    document.getElementById("stat-today-meta").textContent = todayMeetings
-      .map((m) => fmtStamp(m.when).replace("Today ", ""))
-      .join(" · ");
+    const first = todayMeetings[0];
+    const last = todayMeetings[todayMeetings.length - 1];
+    document.getElementById("stat-today-meta").textContent = first
+      ? `${fmtStamp(first.when).replace("Today ", "")}–${fmtStamp(last.when).replace("Today ", "")}`
+      : "on calendar";
     document.getElementById("stat-week").textContent = String(data.meetings.length);
     document.getElementById("stat-pending").textContent = String(pending.length);
     document.getElementById("stat-done").textContent = String(done.length);
