@@ -1,5 +1,5 @@
 /* 与其他变体同一批公司内部任务：审阅、用印、巡检、上市、售后、周行动、对账 */
-window.DISPATCH = {
+window.OPS_DESKTOP = {
   company: "华东零售",
   boardTitle: "运营桌面",
   timezone: "CST",
