@@ -1,9 +1,19 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <!-- Root preview of 任务流转中心. CSS/JS/data live in variants/ops-console/. -->
     <base href="variants/ops-console/" />
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("mfc-theme");
+          if (theme === "light" || theme === "dark") {
+            document.documentElement.setAttribute("data-theme", theme);
+          }
+        } catch (err) {}
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>任务流转中心</title>
     <meta name="description" content="任务流转中心 / Mission Transfer Center：电商采集、监控与报表任务的流转监视。" />
@@ -78,6 +88,10 @@
           <span class="hide-sm">第 34 周</span>
           <span><b id="clock-date">8月18日 周二</b></span>
           <span id="clock-time">09:42</span>
+        </div>
+        <div class="theme-toggle" role="group" aria-label="主题">
+          <button type="button" data-theme-set="light">浅色</button>
+          <button type="button" data-theme-set="dark" class="is-on">深色</button>
         </div>
       </header>
 

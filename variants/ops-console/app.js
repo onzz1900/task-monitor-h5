@@ -1,4 +1,28 @@
 (function () {
+  const THEME_KEY = "mfc-theme";
+
+  function currentTheme() {
+    return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+  }
+
+  function applyTheme(theme) {
+    const next = theme === "light" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try {
+      localStorage.setItem(THEME_KEY, next);
+    } catch (err) {}
+    document.querySelectorAll("[data-theme-set]").forEach((btn) => {
+      btn.classList.toggle("is-on", btn.getAttribute("data-theme-set") === next);
+    });
+  }
+
+  document.querySelectorAll("[data-theme-set]").forEach((btn) => {
+    btn.addEventListener("click", () => applyTheme(btn.getAttribute("data-theme-set")));
+  });
+  applyTheme(currentTheme());
+})();
+
+(function () {
   const data = window.TRANSFER_CENTER;
   if (!data || !Array.isArray(data.tasks) || !data.tasks.length) return;
 

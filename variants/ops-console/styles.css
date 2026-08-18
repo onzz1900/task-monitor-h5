@@ -1,4 +1,6 @@
-:root {
+:root,
+html[data-theme="dark"] {
+  color-scheme: dark;
   --bg: #07080b;
   --bg-2: #0c0d12;
   --surface: #101218;
@@ -16,6 +18,13 @@
   --amber: #f5c14a;
   --red: #ff6b7a;
   --green: #3dd68c;
+  --chip-pending: #d7dbe8;
+  --topbar-bg: rgba(7, 8, 11, 0.86);
+  --stats-bg: rgba(12, 13, 18, 0.92);
+  --th-bg: #0e1016;
+  --row-hover: rgba(255, 255, 255, 0.025);
+  --app-glow: rgba(109, 124, 255, 0.08);
+  --shadow-float: 0 18px 50px rgba(0, 0, 0, 0.45);
   --sidebar: 220px;
   --top: 48px;
   --stats: 64px;
@@ -24,7 +33,34 @@
   --mono: "IBM Plex Mono", "SF Mono", ui-monospace, monospace;
   --cond: "IBM Plex Sans Condensed", "IBM Plex Sans", sans-serif;
   --radius-chip: 999px;
-  --shadow-float: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f3f4f7;
+  --bg-2: #e9ebf0;
+  --surface: #ffffff;
+  --surface-2: #f6f7fa;
+  --surface-3: #eceef3;
+  --line: rgba(22, 26, 38, 0.08);
+  --line-2: rgba(22, 26, 38, 0.14);
+  --ink: #151821;
+  --ink-2: #5a6172;
+  --ink-3: #7b8394;
+  --accent: #3d4ee6;
+  --accent-2: #3140c9;
+  --accent-dim: rgba(61, 78, 230, 0.1);
+  --cyan: #0b8a76;
+  --amber: #a56b08;
+  --red: #c43344;
+  --green: #17824e;
+  --chip-pending: #4b5263;
+  --topbar-bg: rgba(255, 255, 255, 0.9);
+  --stats-bg: rgba(246, 247, 250, 0.94);
+  --th-bg: #eef0f4;
+  --row-hover: rgba(22, 26, 38, 0.035);
+  --app-glow: rgba(61, 78, 230, 0.07);
+  --shadow-float: 0 16px 40px rgba(22, 26, 38, 0.14);
 }
 
 *,
@@ -74,7 +110,7 @@ a {
   grid-template-rows: var(--top) var(--stats) var(--toolbar) 1fr;
   height: 100dvh;
   background:
-    radial-gradient(1200px 500px at 80% -10%, rgba(109, 124, 255, 0.08), transparent 50%),
+    radial-gradient(1200px 500px at 80% -10%, var(--app-glow), transparent 50%),
     var(--bg);
 }
 
@@ -202,7 +238,7 @@ a {
   gap: 12px;
   padding: 0 16px;
   border-bottom: 1px solid var(--line);
-  background: rgba(7, 8, 11, 0.86);
+  background: var(--topbar-bg);
   backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
@@ -244,6 +280,34 @@ a {
 .clock b {
   color: var(--ink);
   font-weight: 500;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border: 1px solid var(--line-2);
+  background: var(--surface);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.theme-toggle button {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 6px;
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.theme-toggle button:hover {
+  color: var(--ink);
+}
+
+.theme-toggle button.is-on {
+  background: var(--accent-dim);
+  color: var(--accent-2);
+  font-weight: 600;
 }
 
 .search {
@@ -292,7 +356,7 @@ a {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   border-bottom: 1px solid var(--line);
-  background: rgba(12, 13, 18, 0.92);
+  background: var(--stats-bg);
   backdrop-filter: blur(12px);
   position: sticky;
   top: var(--top);
@@ -435,7 +499,7 @@ a {
   top: 0;
   z-index: 5;
   height: 30px;
-  background: #0e1016;
+  background: var(--th-bg);
   color: var(--ink-3);
   font-size: 11px;
   letter-spacing: 0.04em;
@@ -449,7 +513,7 @@ a {
 }
 
 .table tbody tr:hover td {
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--row-hover);
 }
 
 .table tbody tr.is-selected td {
@@ -531,7 +595,7 @@ a {
 .chip.type-monitor .swatch { background: #fb923c; }
 .chip.type-report .swatch { background: #c4b5fd; }
 
-.chip.status-pending { color: #d7dbe8; }
+.chip.status-pending { color: var(--chip-pending); }
 .chip.status-in-review { color: var(--accent-2); border-color: rgba(109, 124, 255, 0.35); background: var(--accent-dim); }
 .chip.status-transferring { color: var(--cyan); border-color: rgba(94, 234, 212, 0.3); background: rgba(94, 234, 212, 0.08); }
 .chip.status-waiting { color: var(--amber); border-color: rgba(245, 193, 74, 0.3); background: rgba(245, 193, 74, 0.08); }
@@ -880,7 +944,7 @@ a {
   .stats { top: var(--top); }
   .toolbar { top: calc(var(--top) + var(--stats)); }
 
-  .search { width: 42vw; }
+  .search { width: 34vw; }
   .clock .hide-sm { display: none; }
 
   .toolbar {
@@ -963,6 +1027,6 @@ a {
 
 @media (max-width: 560px) {
   .crumb-title { display: none; }
-  .search { width: 38vw; }
+  .search { width: 30vw; }
   .filter-chip[data-type] { display: none; }
 }
