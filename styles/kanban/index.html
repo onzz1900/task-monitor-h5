@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>任务流转台 · 嘉禾商业</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="sheet">
+    <header class="masthead">
+      <div class="masthead-mark">
+        <span class="seal" aria-hidden="true">嘉</span>
+        <div class="org">
+          <p class="org-name">嘉禾商业集团 · 华东运营中心</p>
+          <h1>任务流转台</h1>
+        </div>
+      </div>
+      <p class="masthead-date">
+        <span class="date-kicker">今日台账</span>
+        <time datetime="2026-08-18">
+          <span class="date-full">2026年8月18日 星期二</span>
+          <span class="date-short">8月18日 周二</span>
+        </time>
+      </p>
+    </header>
+
+    <section class="stats" aria-labelledby="stats-heading">
+      <div class="section-head">
+        <h2 id="stats-heading">会议统计</h2>
+      </div>
+      <div class="stats-grid">
+        <article class="stat">
+          <p class="stat-label">今日会议</p>
+          <p class="stat-value">2</p>
+        </article>
+        <article class="stat">
+          <p class="stat-label">本周会议</p>
+          <p class="stat-value">5</p>
+        </article>
+        <article class="stat">
+          <p class="stat-label">待跟进</p>
+          <p class="stat-value">4</p>
+        </article>
+        <article class="stat">
+          <p class="stat-label">已完成</p>
+          <p class="stat-value">1</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="board-wrap" aria-labelledby="board-heading">
+      <div class="section-head board-head">
+        <h2 id="board-heading">任务看板</h2>
+        <p class="board-hint">
+          <span class="hint-desktop">按流转状态分列</span>
+          <span class="hint-mobile">左右滑动查看各列</span>
+        </p>
+      </div>
+
+      <main class="board">
+        <section class="column" data-status="doing" aria-labelledby="col-doing">
+          <header class="column-head">
+            <h3 id="col-doing">进行中</h3>
+            <span class="count">2</span>
+          </header>
+          <ul class="cards">
+            <li class="card" data-status="doing">
+              <div class="card-flow">
+                <p class="flow-label">下次流转</p>
+                <p class="flow-time">10:30</p>
+                <p class="flow-day">今天</p>
+              </div>
+              <h4 class="card-title">华东大客户季度复盘</h4>
+              <p class="card-meta">
+                <span class="status">进行中</span>
+                <span class="owner">李敏</span>
+              </p>
+            </li>
+            <li class="card" data-status="doing">
+              <div class="card-flow">
+                <p class="flow-label">下次流转</p>
+                <p class="flow-time">16:30</p>
+                <p class="flow-day">今天</p>
+              </div>
+              <h4 class="card-title">新品上市排期对齐</h4>
+              <p class="card-meta">
+                <span class="status">进行中</span>
+                <span class="owner">王倩</span>
+              </p>
+            </li>
+          </ul>
+        </section>
+
+        <section class="column" data-status="routing" aria-labelledby="col-routing">
+          <header class="column-head">
+            <h3 id="col-routing">流转中</h3>
+            <span class="count">1</span>
+          </header>
+          <ul class="cards">
+            <li class="card" data-status="routing">
+              <div class="card-flow">
+                <p class="flow-label">下次流转</p>
+                <p class="flow-time">14:00</p>
+                <p class="flow-day">今天</p>
+              </div>
+              <h4 class="card-title">供应商合同用印</h4>
+              <p class="card-meta">
+                <span class="status">流转中</span>
+                <span class="owner">张凯</span>
+              </p>
+            </li>
+          </ul>
+        </section>
+
+        <section class="column" data-status="follow" aria-labelledby="col-follow">
+          <header class="column-head">
+            <h3 id="col-follow">待跟进</h3>
+            <span class="count">2</span>
+          </header>
+          <ul class="cards">
+            <li class="card" data-status="follow">
+              <div class="card-flow">
+                <p class="flow-label">下次流转</p>
+                <p class="flow-time">09:00</p>
+                <p class="flow-day">明天</p>
+              </div>
+              <h4 class="card-title">南京新街口店巡检整改</h4>
+              <p class="card-meta">
+                <span class="status">待跟进</span>
+                <span class="owner">店长</span>
+              </p>
+            </li>
+            <li class="card" data-status="waiting">
+              <div class="card-flow">
+                <p class="flow-label">下次流转</p>
+                <p class="flow-time">15:00</p>
+                <p class="flow-day">周四</p>
+              </div>
+              <h4 class="card-title">渠道费用对账 8 月</h4>
+              <p class="card-meta">
+                <span class="status">等待中</span>
+                <span class="owner">财务</span>
+              </p>
+            </li>
+          </ul>
+        </section>
+
+        <section class="column" data-status="blocked" aria-labelledby="col-blocked">
+          <header class="column-head">
+            <h3 id="col-blocked">阻塞</h3>
+            <span class="count">1</span>
+          </header>
+          <ul class="cards">
+            <li class="card" data-status="blocked">
+              <div class="card-flow">
+                <p class="flow-label">下次流转</p>
+                <p class="flow-time">11:00</p>
+                <p class="flow-day">明天</p>
+              </div>
+              <h4 class="card-title">售后升级单 #4821</h4>
+              <p class="card-meta">
+                <span class="status">已阻塞</span>
+                <span class="owner">质检</span>
+              </p>
+            </li>
+          </ul>
+        </section>
+
+        <section class="column" data-status="done" aria-labelledby="col-done">
+          <header class="column-head">
+            <h3 id="col-done">完成</h3>
+            <span class="count">1</span>
+          </header>
+          <ul class="cards">
+            <li class="card" data-status="done">
+              <div class="card-flow">
+                <p class="flow-label">下次流转</p>
+                <p class="flow-time is-text">已结束</p>
+                <p class="flow-day">闭环</p>
+              </div>
+              <h4 class="card-title">周例会行动项回收</h4>
+              <p class="card-meta">
+                <span class="status">已完成</span>
+                <span class="owner">周琪</span>
+              </p>
+            </li>
+          </ul>
+        </section>
+      </main>
+    </section>
+
+    <footer class="colophon">
+      <p>内部台账示意 · 嘉禾商业运营中心 · 无需登录</p>
+    </footer>
+  </div>
+</body>
+</html>
