@@ -1,6 +1,6 @@
 "use client";
 
-/** 客户端工具：Better Auth、API 请求、时间格式化（统一北京时间）、皮肤。 */
+/** 客户端工具：Better Auth、API 请求、时间格式化（统一北京时间）、可选皮肤。 */
 import { inferAdditionalFields } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import type { auth } from "./auth";
@@ -63,13 +63,15 @@ export function fmtRelative(iso: string | null | undefined): string {
   return `${Math.floor(abs / (24 * 60))} 天${dir}`;
 }
 
-export type Skin = "fable" | "console";
+export type Skin = "studio" | "fable" | "console";
 
 const skinListeners = new Set<() => void>();
 
 export function getSkin(): Skin {
-  if (typeof document === "undefined") return "fable";
-  return document.documentElement.getAttribute("data-skin") === "console" ? "console" : "fable";
+  if (typeof document === "undefined") return "studio";
+  const value = document.documentElement.getAttribute("data-skin");
+  if (value === "fable" || value === "console") return value;
+  return "studio";
 }
 
 export function subscribeSkin(onStoreChange: () => void): () => void {

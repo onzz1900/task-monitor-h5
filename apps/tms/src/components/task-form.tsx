@@ -117,7 +117,7 @@ export function TaskForm({ task }: { task?: Task }) {
     <form onSubmit={submit} className="flex max-w-3xl flex-col gap-5">
       <Card>
         <CardHeader>
-          <CardTitle className="font-display">基础信息</CardTitle>
+          <CardTitle>基础信息</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-1.5 sm:col-span-2">
@@ -208,7 +208,7 @@ export function TaskForm({ task }: { task?: Task }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="font-display">调度（Asia/Shanghai）</CardTitle>
+          <CardTitle>调度（Asia/Shanghai）</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-1.5">
@@ -268,7 +268,7 @@ export function TaskForm({ task }: { task?: Task }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="font-display flex items-center justify-between">
+          <CardTitle className="flex items-center justify-between">
             回调（可选）
             <label className="flex items-center gap-2 text-sm font-normal">
               <input
