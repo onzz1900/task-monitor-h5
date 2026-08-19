@@ -76,6 +76,16 @@ export function asCount(n: unknown): number {
   return Number(n ?? 0);
 }
 
+/**
+ * mysql2 `execute` (binary prepared statements) rejects bound LIMIT/OFFSET on
+ * MySQL 8.x (`Incorrect arguments to mysqld_stmt_execute`). Inline a clamped int.
+ */
+export function sqlLimit(value: unknown, fallback = 1, max = 1000): number {
+  const n = Math.trunc(Number(value));
+  if (!Number.isFinite(n) || n < 1) return fallback;
+  return Math.min(max, n);
+}
+
 export async function createDomainTables(): Promise<void> {
   await exec(`
     CREATE TABLE IF NOT EXISTS roles (

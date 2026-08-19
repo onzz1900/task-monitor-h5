@@ -1,8 +1,8 @@
 /** 任务领域逻辑：校验、序列化、模拟运行、备份裁剪。 */
-import { asCount, execute, query, queryOne } from "./db";
+import { asCount, execute, query, queryOne, sqlLimit } from "./db";
 import { SECRET_REFS, STATUSES, TASK_TYPES } from "./meta";
-import { computeNextRun, isValidCron } from "./schedule";
 import { ApiError } from "./rbac";
+import { computeNextRun, isValidCron } from "./schedule";
 
 export type TaskInput = {
   title: string;
@@ -83,9 +83,10 @@ export function normalizeInput(body: TaskInput): TaskInput {
 }
 
 export async function serializeTask(row: TaskRow, withRuns = false) {
+  const runLimit = sqlLimit(withRuns ? 100 : 1, 1, 100);
   const runs = await query<Record<string, unknown>>(
-    "SELECT id, ran_at, ok, result_text, duration_ms FROM task_runs WHERE task_id = ? ORDER BY ran_at DESC LIMIT ?",
-    [row.id, withRuns ? 100 : 1],
+    `SELECT id, ran_at, ok, result_text, duration_ms FROM task_runs WHERE task_id = ? ORDER BY ran_at DESC LIMIT ${runLimit}`,
+    [row.id],
   );
   const toRun = (r: Record<string, unknown>) => ({ ...r, ok: Boolean(r.ok) });
   return {
@@ -138,10 +139,13 @@ export async function runTask(id: number): Promise<TaskRow> {
   const now = new Date();
   const { ok, text } = mockRunResult(task);
 
-  await execute(
-    "INSERT INTO task_runs (task_id, ran_at, ok, result_text, duration_ms) VALUES (?, ?, ?, ?, ?)",
-    [id, now.toISOString(), ok ? 1 : 0, text, randInt(5000, 90000)],
-  );
+  await execute("INSERT INTO task_runs (task_id, ran_at, ok, result_text, duration_ms) VALUES (?, ?, ?, ?, ?)", [
+    id,
+    now.toISOString(),
+    ok ? 1 : 0,
+    text,
+    randInt(5000, 90000),
+  ]);
 
   let pointsDone = task.points_done as number;
   const total = task.points_total as number;
@@ -166,13 +170,14 @@ export async function runTask(id: number): Promise<TaskRow> {
     id,
   ]);
 
+  const keep = sqlLimit(task.keep_runs, 10, 100);
   await execute(
     `DELETE FROM task_runs WHERE task_id = ? AND id NOT IN (
        SELECT id FROM (
-         SELECT id FROM task_runs WHERE task_id = ? ORDER BY ran_at DESC LIMIT ?
+         SELECT id FROM task_runs WHERE task_id = ? ORDER BY ran_at DESC LIMIT ${keep}
        ) kept
      )`,
-    [id, id, task.keep_runs as number],
+    [id, id],
   );
 
   return getTask(id);

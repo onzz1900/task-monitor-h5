@@ -26,6 +26,8 @@ Compose 会拉起本机 `localhost:3306` 的 MySQL，并跑 `npm run db:setup`�
 
 `src/lib/db.ts` 读环境变量 `DATABASE_URL`。未设置时默认就是这份本地 Compose MySQL。复制 `.env.example` 即可，不必再配远程库。
 
+查询走 mysql2 的 `execute`（二进制预处理）。MySQL 8.x 对预处理语句里的 `LIMIT ?` / `OFFSET ?` 会报 `Incorrect arguments to mysqld_stmt_execute`，所以条数用 `sqlLimit()` 夹成整数后写进 SQL，不作为绑定参数。
+
 ### 3. 跑应用
 
 ```bash
