@@ -9,7 +9,7 @@ import { RuoyiRoles } from "./_components/ruoyi-roles";
 export default async function Page() {
   const user = await getSessionUser();
   if (!user) redirect("/auth/v1/login");
-  if (!hasPerm(user.permissions, "system:role:list")) redirect("/unauthorized");
+  if (user.disabled || !hasPerm(user.permissions, "system:role:list")) redirect("/unauthorized");
 
   const roles = await listRoles();
   const mapped = [];

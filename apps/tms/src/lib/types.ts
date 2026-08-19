@@ -1,9 +1,10 @@
 /** 前端共享类型。 */
 
 export type Bootstrap = {
-  user: { id: string; email: string; name: string; role: string; role_name: string };
+  user: { id: string; email: string; name: string; role: string; role_name: string; status: string };
   permissions: string[];
   menus: { title: string; path: string; sort: number; permission_code: string }[];
+  disabled: boolean;
 };
 
 export type Run = {

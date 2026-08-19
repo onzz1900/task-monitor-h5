@@ -18,9 +18,12 @@ import { LayoutControls } from "./_components/header/layout-controls";
 import { SearchDialog } from "./_components/header/search-dialog";
 import { ThemeSwitcher } from "./_components/header/theme-switcher";
 
+export const dynamic = "force-dynamic";
+
 export default async function Layout({ children }: Readonly<{ children: ReactNode }>) {
   const boot = await loadBootstrap();
   if (!boot) redirect("/auth/v1/login");
+  if (boot.disabled) redirect("/unauthorized");
 
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar_state")?.value !== "false";
@@ -38,7 +41,7 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant={variant} collapsible={collapsible} />
+      <AppSidebar variant={variant} collapsible={collapsible} permissions={boot.permissions} />
       <SidebarInset
         className={cn(
           "[html[data-content-layout=centered]_&>*]:mx-auto",

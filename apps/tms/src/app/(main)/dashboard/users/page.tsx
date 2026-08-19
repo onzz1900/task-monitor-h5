@@ -9,7 +9,7 @@ import { RuoyiUsers } from "./_components/ruoyi-users";
 export default async function Page() {
   const user = await getSessionUser();
   if (!user) redirect("/auth/v1/login");
-  if (!hasPerm(user.permissions, "system:user:list")) redirect("/unauthorized");
+  if (user.disabled || !hasPerm(user.permissions, "system:user:list")) redirect("/unauthorized");
 
   const [users, depts, roles] = await Promise.all([listUsers(), listDepts(), listRoles()]);
 

@@ -14,6 +14,8 @@ export type SessionUser = {
   role: string;
   permissions: string[];
   sysUserId: number | null;
+  status: string;
+  disabled: boolean;
 };
 
 export async function getSessionUser(): Promise<SessionUser | null> {
@@ -22,17 +24,21 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   if (!session) return null;
   const u = session.user as typeof session.user & { role?: string };
   const sys = await findSysUserByEmail(u.email);
-  const loaded = sys
-    ? await loadPermsForUser(Number(sys.user_id))
-    : { roleKeys: [] as string[], perms: [] as string[] };
+  const disabled = Boolean(sys && String(sys.status) === "1");
+  const loaded =
+    sys && !disabled
+      ? await loadPermsForUser(Number(sys.user_id))
+      : { roleKeys: [] as string[], perms: [] as string[] };
   const role = loaded.roleKeys[0] ?? u.role ?? "readonly";
   return {
     id: u.id,
     email: u.email,
     name: sys?.nick_name ?? u.name,
     role,
-    permissions: loaded.perms,
+    permissions: disabled ? [] : loaded.perms,
     sysUserId: sys ? Number(sys.user_id) : null,
+    status: sys ? String(sys.status) : "0",
+    disabled,
   };
 }
 
@@ -49,6 +55,7 @@ export class ApiError extends Error {
 export async function requirePermission(code: string): Promise<SessionUser> {
   const user = await getSessionUser();
   if (!user) throw new ApiError(401, "未登录");
+  if (user.disabled) throw new ApiError(403, "账号已停用");
   if (!hasPerm(user.permissions, code)) throw new ApiError(403, `缺少权限：${code}`);
   return user;
 }

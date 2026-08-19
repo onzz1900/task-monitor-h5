@@ -27,8 +27,10 @@ export async function loadBootstrap(): Promise<Bootstrap | null> {
       name: user.name,
       role: user.role,
       role_name: roleName,
+      status: user.status,
     },
     permissions: user.permissions,
     menus,
+    disabled: user.disabled,
   };
 }

@@ -12,7 +12,7 @@ import { Tasks } from "./_components/tasks";
 export default async function Page() {
   const user = await getSessionUser();
   if (!user) redirect("/auth/v1/login");
-  if (!hasPerm(user.permissions, "task:read")) redirect("/unauthorized");
+  if (user.disabled || !hasPerm(user.permissions, "task:read")) redirect("/unauthorized");
 
   const rows = await query<TaskRow>("SELECT * FROM tasks ORDER BY (next_run_at IS NULL), next_run_at");
   const data = await Promise.all(rows.map(async (row) => toTableTask((await serializeTask(row)) as Task)));

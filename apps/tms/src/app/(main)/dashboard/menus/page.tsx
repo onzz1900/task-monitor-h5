@@ -9,7 +9,7 @@ import { RuoyiMenus } from "./_components/ruoyi-menus";
 export default async function Page() {
   const user = await getSessionUser();
   if (!user) redirect("/auth/v1/login");
-  if (!hasPerm(user.permissions, "system:menu:list")) redirect("/unauthorized");
+  if (user.disabled || !hasPerm(user.permissions, "system:menu:list")) redirect("/unauthorized");
 
   const menus = await listMenus();
   const rows = menus.map(serializeMenu);
