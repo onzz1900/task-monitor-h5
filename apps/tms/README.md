@@ -73,7 +73,7 @@ npm run dev
 
 每次请求从库重读 `sys_user_role` / `sys_role_menu` / `sys_user.status`（布局 `force-dynamic`）。非超管侧栏只保留其有权的业务项（任务 / 看板 / 用户 / 角色 / 菜单），模板演示页（CRM、财务等）仍给超管看、对值班/只读隐藏。直打 `/dashboard/users|roles|menus` 缺 `system:*:list` 会到 `/unauthorized`。未登录访问 `/dashboard/*` 回 Login v1。`sys_user.status=1`（停用）下一请求起 API/页不可用。登出走 Better Auth `signOut`。
 
-`/dashboard/kanban` 用官方模板看板壳，卡片来自同一张 `tasks` 表。列对照：待流转→planned，运行中→building，已阻塞→qa，本轮已完成→shipped，其余→ideas。拖到另一列会 `PATCH /api/tasks/:id` 写回 `tasks.status`（需 `task:update`），失败则回弹。`/dashboard/tasks` 表格仍在。
+`/dashboard/kanban` 用官方模板看板壳，卡片来自同一张 `tasks` 表。展示：待流转→planned，运行中→building，已阻塞→qa，本轮已完成→shipped，未知状态只出现在 ideas。拖列只写 `meta.ts` 的四个中文状态（ideas/planned 都写 待流转，building→运行中，qa→已阻塞，shipped→本轮已完成），从不把英文列名写入 MySQL。失败则回弹。`/dashboard/tasks` 表格仍在。
 
 ## 保留的模板 chrome 文件（未重画）
 

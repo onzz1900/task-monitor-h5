@@ -21,7 +21,7 @@ export const STATUS_TO_COLUMN: Record<string, ColumnId> = {
 };
 
 export const COLUMN_TO_STATUS: Record<ColumnId, string> = {
-  ideas: "ideas",
+  ideas: "待流转",
   planned: "待流转",
   building: "运行中",
   qa: "已阻塞",

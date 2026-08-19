@@ -5,7 +5,6 @@ import { STATUSES } from "@/lib/meta";
 import { ApiError, handleApiError, requirePermission } from "@/lib/rbac";
 import { computeNextRun } from "@/lib/schedule";
 import { getTask, normalizeInput, serializeTask } from "@/lib/tasks";
-import { COLUMN_TO_STATUS } from "@/lib/tms-map";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -63,7 +62,7 @@ export async function PUT(req: Request, ctx: Ctx) {
   }
 }
 
-const ALLOWED_STATUS = new Set<string>([...STATUSES, ...Object.values(COLUMN_TO_STATUS)]);
+const ALLOWED_STATUS = new Set<string>(STATUSES);
 
 export async function PATCH(req: Request, ctx: Ctx) {
   try {
