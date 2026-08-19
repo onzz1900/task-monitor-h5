@@ -19,14 +19,14 @@ python3 -m http.server 4173
 
 ## 任务管理系统（TMS）
 
-静态原型之外，[`apps/tms/`](apps/tms/) 是任务管理系统。界面底是官方 [Studio Admin](https://github.com/arhamkhnz/next-shadcn-admin-dashboard)（侧栏、顶栏、主题、Login v1、Tasks 表格均保留模板文件），业务是 Next.js Route Handlers + MySQL + Better Auth。纸票版 / 控制台版只作为 `variants/` 存档。
+静态原型之外，[`apps/tms/`](apps/tms/) 是任务管理系统。界面底是官方 [Studio Admin](https://github.com/arhamkhnz/next-shadcn-admin-dashboard)（侧栏、顶栏、主题、Login v1、Tasks 表格均保留模板文件），业务是 Next.js Route Handlers + 本地 MySQL + Better Auth。纸票版 / 控制台版只作为 `variants/` 存档。
 
 ```bash
 cd apps/tms
-cp .env.example .env
+cp .env.example .env          # 本地 DATABASE_URL，见该文件
 npm install
-docker compose up -d    # 本地 MySQL（DATABASE_URL=mysql://tms:tmsdemo@127.0.0.1:3306/tms）
-npm run dev             # http://localhost:3000
+docker compose up -d          # 本机 MySQL + 建表/种子
+npm run dev                   # http://localhost:3000
 ```
 
-已有 MySQL 时改 `.env` 的 `DATABASE_URL`（`mysql://...`），再 `npm run db:setup && npm run dev`。保留了哪些模板 chrome 文件见 [apps/tms/README.md](apps/tms/README.md)。
+TMS 通过 `DATABASE_URL` 连这份本地库（未设置时也默认连 Compose 的 MySQL）。保留了哪些模板 chrome 文件见 [apps/tms/README.md](apps/tms/README.md)。

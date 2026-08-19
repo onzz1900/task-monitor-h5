@@ -1,37 +1,44 @@
 # 任务管理系统（TMS）
 
-Studio Admin 官方模板为壳，本仓库业务（Better Auth + MySQL + Route Handlers）接在上面。
+Studio Admin 官方模板为壳，本仓库业务（Better Auth + 本地 MySQL + Route Handlers）接在上面。
 
 底模：[arhamkhnz/next-shadcn-admin-dashboard](https://github.com/arhamkhnz/next-shadcn-admin-dashboard)（Next.js 16 + TypeScript + Tailwind v4 + shadcn）。对照官方演示：[next-shadcn-admin-dashboard.vercel.app](https://next-shadcn-admin-dashboard.vercel.app)。
 
-不要再启动 FastAPI / `:8000`。一个进程即可。
+不要再启动 FastAPI / `:8000`。Next 一个进程；MySQL 用本目录的 Docker Compose。
 
 ## 启动
 
-本地演示用 Docker 起 MySQL（账号写在 compose 里，不是生产密码），再跑 Next：
+### 1. 本地 MySQL
+
+在 `apps/tms` 里起官方演示库（库名 / 账号见 [`.env.example`](.env.example)，与 `docker-compose.yml` 一致）：
 
 ```bash
 cd apps/tms
-cp .env.example .env    # DATABASE_URL=mysql://tms:tmsdemo@127.0.0.1:3306/tms
+cp .env.example .env
 npm install
-docker compose up -d    # MySQL + migrate/seed（管理员 / 值班 / 只读）
+docker compose up -d
+# 或：npm run mysql:up
+```
+
+Compose 会拉起本机 `localhost:3306` 的 MySQL，并跑 `npm run db:setup`（Better Auth 建表 + 业务表 + 演示种子）。
+
+### 2. TMS 怎么连上
+
+`src/lib/db.ts` 读环境变量 `DATABASE_URL`。未设置时默认就是这份本地 Compose MySQL。复制 `.env.example` 即可，不必再配远程库。
+
+### 3. 跑应用
+
+```bash
 npm run dev
 ```
 
 打开 <http://localhost:3000>（官方 Login v1）。未登录访问 `/dashboard/*` 会回到登录页。
 
-指向已有 MySQL：把 `.env` 里的 `DATABASE_URL` 改成你的 `mysql://user:pass@host:3306/dbname`，然后：
-
-```bash
-npm run db:setup        # Better Auth 建表 + 业务表 + 演示种子（已有角色则跳过种子）
-npm run dev
-```
-
-| 变量 | 默认 | 说明 |
-| --- | --- | --- |
-| `DATABASE_URL` | `mysql://tms:tmsdemo@127.0.0.1:3306/tms` | MySQL 连接串（Better Auth 与业务表共用） |
-| `BETTER_AUTH_SECRET` | 内置演示密钥 | 生产环境务必替换 |
-| `BETTER_AUTH_URL` | `http://localhost:3000` | 本应用对外地址 |
+| 变量 | 说明 |
+| --- | --- |
+| `DATABASE_URL` | 本地 MySQL 连接串，默认见 `.env.example` |
+| `BETTER_AUTH_SECRET` | 未设则用内置演示密钥 |
+| `BETTER_AUTH_URL` | 默认 `http://localhost:3000` |
 
 ## 演示账号
 
@@ -69,7 +76,7 @@ npm run dev
 ## 接到模板上的业务
 
 - Better Auth：`src/lib/auth.ts`、`src/app/api/auth/[...all]/route.ts`
-- MySQL + 种子（管理员 / 值班 / 只读）：`src/lib/db.ts`、`src/lib/init.ts`、`docker-compose.yml`
+- 本地 MySQL + 种子（管理员 / 值班 / 只读）：`src/lib/db.ts`、`src/lib/init.ts`、`docker-compose.yml`
 - Route Handlers：`src/app/api/tasks`、`users`、`roles`、`meta`、`bootstrap`
 - 任务 / 用户 / 角色页只换数据源，表格仍用模板组件
 
