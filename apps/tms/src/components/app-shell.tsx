@@ -3,9 +3,9 @@
 /** 应用外壳：顶栏（品牌 / 皮肤切换 / 用户）+ 侧边菜单（按权限过滤）。会话由服务端布局注入。 */
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
-import { authClient, getSkin, setSkin, type Skin } from "@/lib/client";
+import { authClient, getSkin, setSkin, subscribeSkin, type Skin } from "@/lib/client";
 import type { Bootstrap } from "@/lib/types";
 
 const BootstrapContext = createContext<Bootstrap | null>(null);
@@ -22,12 +22,8 @@ export function useCan(): (perm: string) => boolean {
 }
 
 function SkinSwitch() {
-  const [skin, setSkinState] = useState<Skin>("fable");
-  useEffect(() => setSkinState(getSkin()), []);
-  const change = (s: Skin) => {
-    setSkin(s);
-    setSkinState(s);
-  };
+  const skin = useSyncExternalStore(subscribeSkin, getSkin, () => "fable" as Skin);
+  const change = (s: Skin) => setSkin(s);
   return (
     <div
       role="group"

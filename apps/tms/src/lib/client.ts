@@ -65,9 +65,18 @@ export function fmtRelative(iso: string | null | undefined): string {
 
 export type Skin = "fable" | "console";
 
+const skinListeners = new Set<() => void>();
+
 export function getSkin(): Skin {
   if (typeof document === "undefined") return "fable";
   return document.documentElement.getAttribute("data-skin") === "console" ? "console" : "fable";
+}
+
+export function subscribeSkin(onStoreChange: () => void): () => void {
+  skinListeners.add(onStoreChange);
+  return () => {
+    skinListeners.delete(onStoreChange);
+  };
 }
 
 export function setSkin(skin: Skin): void {
@@ -77,4 +86,5 @@ export function setSkin(skin: Skin): void {
   } catch {
     /* ignore */
   }
+  skinListeners.forEach((listener) => listener());
 }
