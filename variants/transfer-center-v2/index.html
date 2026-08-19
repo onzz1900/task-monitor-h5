@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("mtc-v2-theme");
+          if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        } catch (err) {}
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>任务流转中心 · 流转时刻轴</title>
+    <meta name="description" content="任务流转中心 / Mission Transfer Center：电商采集、监控与报表任务的点位进度与流转时间。" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@500;700&family=Space+Grotesk:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='10' fill='%231f6f5c'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='16' font-family='serif' fill='%23fdfbf5'%3E转%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#timeline">跳到任务时刻轴</a>
+
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">转</span>
+          <span class="brand-copy">
+            <span class="brand-name">任务流转中心</span>
+            <span class="brand-sub">Mission Transfer Center</span>
+          </span>
+        </div>
+        <div class="topbar-right">
+          <div class="snapshot">
+            <span class="snapshot-k">数据快照</span>
+            <span class="snapshot-v" id="snapshot">—</span>
+          </div>
+          <div class="theme-switch" role="group" aria-label="主题切换">
+            <button type="button" data-theme-set="light">
+              <span aria-hidden="true">☀</span>
+              浅色
+            </button>
+            <button type="button" data-theme-set="dark">
+              <span aria-hidden="true">☾</span>
+              深色
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="hero" aria-label="流转概览">
+        <article class="next-up" id="next-up">
+          <div class="next-up-k">最近一次流转</div>
+          <div class="next-up-clock" id="next-clock">—</div>
+          <div class="next-up-rel" id="next-rel">—</div>
+          <div class="next-up-task" id="next-task">—</div>
+          <div class="next-up-hand" id="next-hand">—</div>
+        </article>
+
+        <div class="stats" aria-label="任务状态统计">
+          <article class="stat" data-tone="run">
+            <span class="ring" style="--pct: 0"><b data-stat="running">0</b></span>
+            <span class="stat-copy">
+              <span class="stat-label">运行中</span>
+              <span class="stat-note">正在采集 / 监控</span>
+            </span>
+          </article>
+          <article class="stat" data-tone="wait">
+            <span class="ring" style="--pct: 0"><b data-stat="waiting">0</b></span>
+            <span class="stat-copy">
+              <span class="stat-label">待流转</span>
+              <span class="stat-note">等下一手接走</span>
+            </span>
+          </article>
+          <article class="stat" data-tone="block">
+            <span class="ring" style="--pct: 0"><b data-stat="blocked">0</b></span>
+            <span class="stat-copy">
+              <span class="stat-label">已阻塞</span>
+              <span class="stat-note">需先排除故障</span>
+            </span>
+          </article>
+          <article class="stat" data-tone="done">
+            <span class="ring" style="--pct: 0"><b data-stat="done">0</b></span>
+            <span class="stat-copy">
+              <span class="stat-label">本轮已完成</span>
+              <span class="stat-note">点位已收口</span>
+            </span>
+          </article>
+        </div>
+      </section>
+
+      <section class="controls" aria-label="筛选">
+        <div class="pills" id="pills" role="tablist" aria-label="按状态筛选">
+          <button type="button" role="tab" class="is-on" data-filter="all">全部</button>
+          <button type="button" role="tab" data-filter="运行中">运行中</button>
+          <button type="button" role="tab" data-filter="待流转">待流转</button>
+          <button type="button" role="tab" data-filter="已阻塞">已阻塞</button>
+          <button type="button" role="tab" data-filter="本轮已完成">本轮已完成</button>
+        </div>
+        <label class="search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M20 20l-3.6-3.6" />
+          </svg>
+          <input id="search" type="search" placeholder="搜索任务、点位或负责人" autocomplete="off" />
+        </label>
+      </section>
+
+      <section class="rail" aria-label="流转时刻轴">
+        <div class="rail-head">
+          <h2>流转时刻轴</h2>
+          <p id="rail-note">按下次流转时间排序</p>
+        </div>
+        <ol class="timeline" id="timeline">
+          <li class="empty">正在载入任务…</li>
+        </ol>
+        <noscript>
+          <p class="empty">该原型需要 JavaScript 渲染任务列表，请在浏览器中开启后查看。</p>
+        </noscript>
+      </section>
+
+      <footer class="page-foot">
+        <span>任务流转中心 · 流转时刻轴设计</span>
+        <span id="foot-viewer">—</span>
+      </footer>
+    </main>
+
+    <div class="sheet-backdrop" id="backdrop" hidden></div>
+    <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-hidden="true" aria-label="任务详情"></section>
+
+    <script src="./data.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
