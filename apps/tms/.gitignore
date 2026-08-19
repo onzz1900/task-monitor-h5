@@ -42,3 +42,7 @@ next-env.d.ts
 
 # SQLite 数据文件（首次启动自动建表并写入演示数据）
 /data
+
+# 脚手架生成的说明文件
+AGENTS.md
+CLAUDE.md
