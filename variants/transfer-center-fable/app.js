@@ -19,33 +19,39 @@
     "本轮已完成": "var(--ok)",
   };
 
-  /* ---------- 时间工具（相对固定的演示时间基准） ---------- */
+  /* ---------- 时间工具（相对固定的演示时间基准） ----------
+     所有展示时间统一按北京时间（UTC+8）格式化，
+     与访问者所在时区无关，保证演示数据到处一致。 */
+
+  var BJ_OFFSET = 8 * 60 * 60 * 1000;
+
+  function toBJ(dateLike) {
+    return new Date(new Date(dateLike).getTime() + BJ_OFFSET);
+  }
 
   function pad(n) {
     return (n < 10 ? "0" : "") + n;
   }
 
   function hm(d) {
-    return pad(d.getHours()) + ":" + pad(d.getMinutes());
+    return pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes());
   }
 
   function dayLabel(d) {
     var one = 24 * 60 * 60 * 1000;
     var startOf = function (x) {
-      var c = new Date(x);
-      c.setHours(0, 0, 0, 0);
-      return c.getTime();
+      return Date.UTC(x.getUTCFullYear(), x.getUTCMonth(), x.getUTCDate());
     };
-    var diff = Math.round((startOf(d) - startOf(NOW)) / one);
+    var diff = Math.round((startOf(d) - startOf(toBJ(NOW))) / one);
     if (diff === 0) return "今天";
     if (diff === 1) return "明天";
     if (diff === -1) return "昨天";
-    return d.getMonth() + 1 + "月" + d.getDate() + "日";
+    return d.getUTCMonth() + 1 + "月" + d.getUTCDate() + "日";
   }
 
   function whenLabel(iso) {
     if (!iso) return "已结束";
-    var d = new Date(iso);
+    var d = toBJ(iso);
     return dayLabel(d) + " " + hm(d);
   }
 
@@ -69,10 +75,11 @@
   /* ---------- 顶栏时钟与主题 ---------- */
 
   var weekCn = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+  var nowBJ = toBJ(NOW);
   document.getElementById("clock").textContent =
-    NOW.getMonth() + 1 + "月" + NOW.getDate() + "日 " + weekCn[NOW.getDay()] + " " + hm(NOW);
+    nowBJ.getUTCMonth() + 1 + "月" + nowBJ.getUTCDate() + "日 " + weekCn[nowBJ.getUTCDay()] + " " + hm(nowBJ);
   document.getElementById("foot-now").textContent =
-    NOW.getFullYear() + "-" + pad(NOW.getMonth() + 1) + "-" + pad(NOW.getDate()) + " " + hm(NOW);
+    nowBJ.getUTCFullYear() + "-" + pad(nowBJ.getUTCMonth() + 1) + "-" + pad(nowBJ.getUTCDate()) + " " + hm(nowBJ) + "（北京时间）";
   document.getElementById("hero-kicker").textContent =
     DATA.company + " · " + DATA.boardTitleEn + " · 值班 " + DATA.viewer.name;
 
