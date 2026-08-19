@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Command } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/client";
@@ -39,26 +39,28 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="grid min-h-screen place-items-center px-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-6 flex items-center justify-center gap-3">
-          <span className="font-display grid size-11 place-items-center rounded-full bg-primary text-xl font-black text-primary-foreground shadow">
-            流
-          </span>
-          <div className="leading-tight">
-            <div className="font-display text-xl font-black">任务流转中心</div>
-            <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-              Mission Transfer Center · TMS
+    <div className="flex h-dvh">
+      <div className="hidden bg-primary lg:block lg:w-1/3">
+        <div className="flex h-full flex-col items-center justify-center p-12 text-center">
+          <div className="space-y-6">
+            <Command className="mx-auto size-12 text-primary-foreground" />
+            <div className="space-y-2">
+              <h1 className="text-5xl font-light text-primary-foreground">欢迎回来</h1>
+              <p className="text-xl text-primary-foreground/80">登录以继续</p>
             </div>
           </div>
         </div>
+      </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-display">登录</CardTitle>
-            <CardDescription>电商采集、监控与报表任务的管理系统</CardDescription>
-          </CardHeader>
-          <CardContent>
+      <div className="flex w-full items-center justify-center bg-background p-8 lg:w-2/3">
+        <div className="w-full max-w-md space-y-10 py-24 lg:py-32">
+          <div className="space-y-4 text-center">
+            <div className="font-medium tracking-tight">登录</div>
+            <div className="mx-auto max-w-xl text-muted-foreground">
+              欢迎回来。输入邮箱和密码进入任务管理系统。
+            </div>
+          </div>
+          <div className="space-y-4">
             <form onSubmit={submit} className="flex flex-col gap-4">
               <div className="grid gap-1.5">
                 <Label htmlFor="email">邮箱</Label>
@@ -81,32 +83,33 @@ export default function LoginPage() {
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
                 />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
-              <Button type="submit" disabled={busy}>
+              <Button className="w-full" type="submit" disabled={busy}>
                 {busy ? "登录中…" : "登录"}
               </Button>
             </form>
-
-            <div className="mt-5 border-t pt-4">
-              <p className="mb-2 text-xs text-muted-foreground">演示账号（点击直接登录）：</p>
-              <div className="flex flex-wrap gap-2">
+            <div className="space-y-2">
+              <p className="text-center text-xs text-muted-foreground">演示账号（点击直接登录）</p>
+              <div className="flex flex-wrap justify-center gap-2">
                 {DEMO_ACCOUNTS.map((a) => (
-                  <button
+                  <Button
                     key={a.email}
                     type="button"
+                    variant="outline"
+                    size="sm"
                     disabled={busy}
                     onClick={() => submit(undefined, a.email, a.password)}
-                    className="rounded-full border border-input bg-card px-3 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   >
-                    {a.label} · {a.email}
-                  </button>
+                    {a.label}
+                  </Button>
                 ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

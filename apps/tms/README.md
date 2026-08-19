@@ -5,7 +5,7 @@
 - 前端：Next.js App Router + React + TypeScript + Tailwind CSS + shadcn/ui
 - 后端：Next.js Route Handlers（本应用即系统记录源），数据存 SQLite 文件（`data/tms.db`，首次启动自动建表 + 写入演示数据）
 - 认证：[Better Auth](https://www.better-auth.com/)（邮箱 + 密码，密码哈希与会话由库处理），RBAC 用角色 / 权限表实现
-- 视觉：默认**纸票版**皮肤（纸面 / 票据 / 衬线标题），顶栏可切换**控制台版**深色皮肤；`variants/` 下的静态原型保持原样作为存档
+- 视觉：默认 **Studio Admin** 管理后台（侧栏 + 表格页）。顶栏可选「纸票版 / 控制台版」存档皮肤，仅换色，不改默认任务表格；`variants/` 下的静态原型保持原样作为存档
 
 只需一个进程。不要再启动 FastAPI / `:8000`。
 

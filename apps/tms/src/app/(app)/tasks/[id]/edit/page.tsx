@@ -27,7 +27,7 @@ export default function EditTaskPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="font-display text-xl font-black">
+      <h1 className="text-3xl tracking-tight">
         修改任务 <span className="font-mono text-sm text-muted-foreground">{task.code}</span>
       </h1>
       <TaskForm task={task} />

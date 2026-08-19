@@ -17,7 +17,7 @@ export default function NewTaskPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="font-display text-xl font-black">登记任务</h1>
+      <h1 className="text-3xl tracking-tight">登记任务</h1>
       <TaskForm />
     </div>
   );

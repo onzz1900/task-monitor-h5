@@ -19,7 +19,7 @@ python3 -m http.server 4173
 
 ## 任务管理系统（TMS）
 
-静态原型之外，[`apps/tms/`](apps/tms/) 是任务管理系统的首个版本（Next.js Route Handlers + SQLite + Better Auth）：登录、菜单与权限、用户与角色、任务的登记 / 修改 / 运行，默认纸票版皮肤、可切换控制台版皮肤。只需一个进程。启动方式与数据模型见 [apps/tms/README.md](apps/tms/README.md)：
+静态原型之外，[`apps/tms/`](apps/tms/) 是任务管理系统（Next.js Route Handlers + SQLite + Better Auth）：登录、菜单与权限、用户与角色、任务的登记 / 修改 / 运行。默认界面是 Studio Admin 风格的侧栏与表格；纸票版 / 控制台版仅作为可选皮肤或 `variants/` 存档。只需一个进程。启动方式与数据模型见 [apps/tms/README.md](apps/tms/README.md)：
 
 ```bash
 cd apps/tms

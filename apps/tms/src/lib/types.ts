@@ -49,8 +49,8 @@ export type Meta = {
 };
 
 export const STATUS_STYLE: Record<string, string> = {
-  运行中: "bg-calm-bg text-calm",
-  待流转: "bg-warn-bg text-warn",
-  已阻塞: "bg-hot-bg text-hot",
-  本轮已完成: "bg-ok-bg text-ok",
+  运行中: "border-sky-500/20 bg-sky-500/10 text-sky-700",
+  待流转: "border-amber-500/20 bg-amber-500/10 text-amber-700",
+  已阻塞: "border-muted-foreground/20 bg-muted text-muted-foreground",
+  本轮已完成: "border-green-500/20 bg-green-500/10 text-green-700",
 };
