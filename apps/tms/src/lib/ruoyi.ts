@@ -423,7 +423,7 @@ export function serializeRole(role: SysRole, menuIds?: number[]) {
     status: String(role.status),
     remark: role.remark,
     create_time: fmtTime(role.create_time),
-    menu_ids: menuIds,
+    menu_ids: menuIds ?? [],
   };
 }
 
