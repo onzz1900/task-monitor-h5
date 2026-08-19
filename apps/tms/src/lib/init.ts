@@ -24,9 +24,9 @@ const ROLES: [string, string, string, string[]][] = [
 ];
 
 const MENUS: [string, string, number, string][] = [
-  ["任务管理", "/tasks", 1, "task:read"],
-  ["用户管理", "/users", 2, "user:read"],
-  ["角色权限", "/roles", 3, "role:read"],
+  ["任务管理", "/dashboard/tasks", 1, "task:read"],
+  ["用户管理", "/dashboard/users", 2, "user:read"],
+  ["角色权限", "/dashboard/roles", 3, "role:read"],
 ];
 
 const USERS: [string, string, string, string][] = [

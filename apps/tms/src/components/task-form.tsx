@@ -104,7 +104,7 @@ export function TaskForm({ task }: { task?: Task }) {
       const saved = task
         ? await api<Task>(`/api/tasks/${task.id}`, { method: "PUT", body: JSON.stringify(payload) })
         : await api<Task>("/api/tasks", { method: "POST", body: JSON.stringify(payload) });
-      router.push(`/tasks/${saved.id}`);
+      router.push(`/dashboard/tasks/${saved.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "保存失败");
       setBusy(false);

@@ -1,13 +1,10 @@
-# 任务流转中心 · 任务管理系统（TMS）
+# 任务管理系统（TMS）
 
-「任务流转中心 / Mission Transfer Center」的任务管理系统首个版本：登录、菜单与权限、用户与角色、任务的登记 / 修改 / 运行，调度（cron / 固定间隔，Asia/Shanghai）与回调（secretRef）为一级表单区块，每个任务备份最近 N 次运行结果（默认 10）。
+Studio Admin 官方模板为壳，本仓库业务（Better Auth + SQLite + Route Handlers）接在上面。
 
-- 前端：Next.js App Router + React + TypeScript + Tailwind CSS + shadcn/ui
-- 后端：Next.js Route Handlers（本应用即系统记录源），数据存 SQLite 文件（`data/tms.db`，首次启动自动建表 + 写入演示数据）
-- 认证：[Better Auth](https://www.better-auth.com/)（邮箱 + 密码，密码哈希与会话由库处理），RBAC 用角色 / 权限表实现
-- 视觉：默认 **Studio Admin** 管理后台（侧栏 + 表格页）。顶栏可选「纸票版 / 控制台版」存档皮肤，仅换色，不改默认任务表格；`variants/` 下的静态原型保持原样作为存档
+底模：[arhamkhnz/next-shadcn-admin-dashboard](https://github.com/arhamkhnz/next-shadcn-admin-dashboard)（Next.js 16 + TypeScript + Tailwind v4 + shadcn）。对照官方演示：[next-shadcn-admin-dashboard.vercel.app](https://next-shadcn-admin-dashboard.vercel.app)。
 
-只需一个进程。不要再启动 FastAPI / `:8000`。
+不要再启动 FastAPI / `:8000`。一个进程即可。
 
 ## 启动
 
@@ -17,9 +14,7 @@ npm install
 npm run dev
 ```
 
-打开 <http://localhost:3000> 即到登录页。
-
-可选环境变量（不设也能跑演示）：
+打开 <http://localhost:3000>（会进官方 Login v1）。未登录访问 `/dashboard/*` 会回到登录页。
 
 | 变量 | 默认 | 说明 |
 | --- | --- | --- |
@@ -29,43 +24,42 @@ npm run dev
 
 ## 演示账号
 
-| 角色 | 邮箱 | 密码 | 能做什么 |
-| --- | --- | --- | --- |
-| 管理员 | `admin@tms.local` | `admin123` | 全部：任务增改运行、用户、角色 |
-| 值班 | `duty@tms.local` | `duty123` | 任务的查看、登记、修改、运行 |
-| 只读 | `readonly@tms.local` | `read123` | 仅查看任务（不能登记 / 修改 / 运行） |
-
-菜单按权限过滤：只读账号看不到「用户管理」「角色权限」，任务页也没有登记 / 运行按钮；接口侧同样校验（403）。
-
-## 数据模型
-
-SQLite 表结构只用 `INTEGER` / `TEXT` 等可移植类型，可平移到 Postgres。Better Auth 自建 `user` / `session` / `account` / `verification` 表；业务表如下：
-
-| 表 | 字段（主干） | 说明 |
+| 角色 | 邮箱 | 密码 |
 | --- | --- | --- |
-| `roles` | `id, code, name, description` | 角色：`admin` 管理员 / `duty` 值班 / `readonly` 只读 |
-| `permissions` | `id, code, name` | 权限点：`task:read / task:create / task:update / task:run / user:read / user:manage / role:read` |
-| `role_permissions` | `role_id, permission_id` | 角色 ↔ 权限多对多 |
-| `menus` | `id, title, path, sort, permission_code` | 菜单项；无对应权限的角色不可见 |
-| `user`（Better Auth） | `… + role` | 附加 `role` 字段存角色 code |
-| `tasks` | `id, code, title, description, type, status, owner_name, channel` | 任务主体；`type` ∈ 评价/聊天/绘图/转化率/监控/报表 |
-| | `points_done, points_total, points_note` | 点位进度（如 12/20） |
-| | `schedule_kind, cron_expr, interval_minutes, timezone, next_run_at` | 调度：cron 或固定间隔，固定 `Asia/Shanghai`；`next_run_at` 即「下次流转」，由 cron/间隔推导 |
-| | `callback_url, callback_timeout_ms, callback_retries, callback_secret_ref` | 可选 POST 回调；只存 **secretRef** 引用名，密钥本体在服务端密管，永不下发 |
-| | `keep_runs` | 运行结果备份份数（默认 10） |
-| `task_runs` | `id, task_id, ran_at, ok, result_text, duration_ms` | 运行记录；每次运行后裁剪到最近 `keep_runs` 条 |
+| 管理员 | `admin@tms.local` | `admin123` |
+| 值班 | `duty@tms.local` | `duty123` |
+| 只读 | `readonly@tms.local` | `read123` |
 
-「运行一次」当前为模拟执行：随机成功 / 失败并生成带具体数字的结果文案，推进点位、写入运行记录、按调度推导下一次流转时间。
+登录后业务页：`/dashboard/tasks`、`/dashboard/users`、`/dashboard/roles`。侧栏 / 顶栏 / 主题仍是模板自带导航（与官方 demo 同一套）。
 
-## 接口一览
+## 保留的模板 chrome 文件（未重画）
 
-| 方法 | 路径 | 权限 |
-| --- | --- | --- |
-| POST | `/api/auth/sign-in/email` 等 | Better Auth 托管 |
-| GET | `/api/bootstrap` | 登录即可（返回用户 + 权限 + 可见菜单） |
-| GET | `/api/meta` | `task:read` |
-| GET / POST | `/api/tasks` | `task:read` / `task:create` |
-| GET / PUT | `/api/tasks/:id` | `task:read` / `task:update` |
-| POST | `/api/tasks/:id/run` | `task:run` |
-| GET | `/api/users`，PATCH `/api/users/:id` | `user:read` / `user:manage` |
-| GET | `/api/roles` | `role:read` |
+这些文件来自官方模板，只做登录提交 / 登出 / 会话守卫等接线，不改颜色、字体、间距、导航结构：
+
+| 用途 | 路径 |
+| --- | --- |
+| 根布局 + 主题启动 | `src/app/layout.tsx` |
+| CSS 变量 / Tailwind | `src/app/globals.css` |
+| 主题预设 | `src/styles/presets/*.css` |
+| Theme boot | `src/scripts/theme-boot.tsx` |
+| Preferences / theme store | `src/stores/preferences/*`、`src/lib/preferences/*` |
+| Dashboard 布局（侧栏 + 顶栏） | `src/app/(main)/dashboard/layout.tsx` |
+| App sidebar | `src/app/(main)/dashboard/_components/sidebar/app-sidebar.tsx` |
+| Nav main / user / support | `src/app/(main)/dashboard/_components/sidebar/nav-main.tsx`、`nav-user.tsx`、`support-card.tsx` |
+| Sidebar 数据 | `src/navigation/sidebar/sidebar-items.ts` |
+| 顶栏：搜索 / 布局 / 主题 / GitHub / 账号 | `src/app/(main)/dashboard/_components/header/*` |
+| shadcn sidebar 原语 | `src/components/ui/sidebar.tsx` |
+| Login v1 壳 | `src/app/(main)/auth/v1/login/page.tsx` |
+| Login 表单 | `src/app/(main)/auth/_components/login-form.tsx` |
+| 应用名 / meta | `src/config/app-config.ts` |
+| Tasks 表格 UI | `src/app/(main)/dashboard/tasks/_components/tasks.tsx`、`columns.tsx`、`tasks-toolbar.tsx` |
+| Users / Roles 表格 UI | `src/app/(main)/dashboard/users/_components/*`、`roles/_components/*` |
+
+## 接到模板上的业务
+
+- Better Auth：`src/lib/auth.ts`、`src/app/api/auth/[...all]/route.ts`
+- SQLite + 种子（管理员 / 值班 / 只读）：`src/lib/db.ts`、`src/lib/init.ts`
+- Route Handlers：`src/app/api/tasks`、`users`、`roles`、`meta`、`bootstrap`
+- 任务 / 用户 / 角色页只换数据源，表格仍用模板组件
+
+纸票版 / 控制台版只在仓库 `variants/` 存档，不参与 TMS 默认界面。
