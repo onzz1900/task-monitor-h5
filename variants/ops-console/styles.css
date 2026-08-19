@@ -282,6 +282,43 @@ a {
   font-weight: 500;
 }
 
+/* 版本切换：纸票版 / 控制台版（当前） */
+
+.ver-switch {
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border: 1px solid var(--line-2);
+  background: var(--surface);
+  border-radius: 8px;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+
+.ver-switch a,
+.ver-switch .ver-current {
+  height: 26px;
+  line-height: 26px;
+  padding: 0 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.ver-switch a {
+  color: var(--ink-2);
+  text-decoration: none;
+}
+
+.ver-switch a:hover {
+  color: var(--ink);
+}
+
+.ver-switch .ver-current {
+  background: var(--accent-dim);
+  color: var(--accent-2);
+  font-weight: 600;
+}
+
 .theme-toggle {
   display: flex;
   align-items: center;
@@ -946,6 +983,7 @@ a {
 
   .search { width: 34vw; }
   .clock .hide-sm { display: none; }
+  .ver-switch .ver-current { display: none; }
 
   .toolbar {
     overflow-x: auto;

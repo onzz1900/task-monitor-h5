@@ -152,6 +152,40 @@ button {
   white-space: nowrap;
 }
 
+/* 版本切换：纸票版（当前）/ 控制台版 */
+
+.ver-switch {
+  display: flex;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--paper-raised);
+  flex: none;
+  font-size: 12.5px;
+}
+
+.ver-switch .ver-current,
+.ver-switch a {
+  padding: 6px 12px;
+  display: block;
+}
+
+.ver-switch .ver-current {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 500;
+}
+
+.ver-switch a {
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.ver-switch a:hover {
+  background: var(--paper-inset);
+  color: var(--ink);
+}
+
 .theme-toggle {
   display: flex;
   border: 1px solid var(--line-strong);
@@ -691,6 +725,7 @@ button {
   .topbar-inner { padding: 8px 14px; gap: 10px; }
   .topbar-clock { display: none; }
   .brand-text small { display: none; }
+  .ver-switch .ver-current { display: none; }
   .only-sm { display: inline; }
 
   .ticket { grid-template-columns: 1fr; }
