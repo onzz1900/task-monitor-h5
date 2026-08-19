@@ -100,7 +100,7 @@ npm run dev
 
 - Better Auth：`src/lib/auth.ts`、`src/app/api/auth/[...all]/route.ts`
 - 本地 MySQL + 种子（管理员 / 值班 / 只读）：`src/lib/db.ts`、`src/lib/init.ts`、`docker-compose.yml`
-- Route Handlers：`src/app/api/tasks`、`/api/system/{users,roles,menus,depts}`、`meta`、`bootstrap`
+- Route Handlers：`src/app/api/tasks`、`/api/system/{users,roles,menus,depts}`、`meta`、`bootstrap`。旧的 `PATCH /api/users/[id]`（写 Better Auth `user.role` / `roles` 表）已删除，改角色只走 `PUT /api/system/users/:id` → `sys_user` / `sys_user_role`。
 - 用户 / 角色 / 菜单页用模板 Table + Dialog + Field + Checkbox 树，数据来自 `sys_*`
 
 纸票版 / 控制台版只在仓库 `variants/` 存档，不参与 TMS 默认界面。
