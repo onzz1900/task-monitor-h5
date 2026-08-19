@@ -16,3 +16,13 @@ python3 -m http.server 4173
 - **控制台版**：[`variants/ops-console/`](variants/ops-console/)，深色高密度控制台风。直接访问 `/variants/ops-console/`。
 
 根目录 `index.html` 只做预览入口，资源从 `variants/transfer-center-fable/` 加载。两个版本目录也都可以单独启动预览（在各自目录内执行 `python3 -m http.server`；单独启动时版本切换链接需从仓库根启动才可用）。
+
+## 任务管理系统（TMS）
+
+静态原型之外，[`apps/tms/`](apps/tms/) 是任务管理系统的首个版本（Next.js + SQLite + Better Auth）：登录、菜单与权限、用户与角色、任务的登记 / 修改 / 运行，默认纸票版皮肤、可切换控制台版皮肤。启动方式与数据模型见 [apps/tms/README.md](apps/tms/README.md)：
+
+```bash
+cd apps/tms
+npm install
+npm run dev   # http://localhost:3000
+```
