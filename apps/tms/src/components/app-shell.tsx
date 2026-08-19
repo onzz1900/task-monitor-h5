@@ -3,7 +3,7 @@
 /** 应用外壳：顶栏（品牌 / 皮肤切换 / 用户）+ 侧边菜单（按权限过滤）+ 会话守卫。 */
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { api, authClient, getSkin, setSkin, type Skin } from "@/lib/client";
 import type { Bootstrap } from "@/lib/types";
@@ -18,7 +18,8 @@ export function useBootstrap(): Bootstrap {
 
 export function useCan(): (perm: string) => boolean {
   const { permissions } = useBootstrap();
-  return (perm) => permissions.includes(perm);
+  // useCallback 保证函数引用稳定，避免依赖它的 effect 反复触发
+  return useCallback((perm: string) => permissions.includes(perm), [permissions]);
 }
 
 function SkinSwitch() {
