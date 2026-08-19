@@ -3,6 +3,8 @@
  */
 import mysql from "mysql2/promise";
 
+import { RUOYI_DDL } from "./ruoyi-schema";
+
 const DEFAULT_DATABASE_URL = "mysql://tms:tmsdemo@127.0.0.1:3306/tms";
 
 export function getDatabaseUrl(): string {
@@ -142,4 +144,5 @@ export async function createDomainTables(): Promise<void> {
       INDEX idx_task_runs_task (task_id, ran_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
+  await exec(RUOYI_DDL);
 }

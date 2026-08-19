@@ -2,17 +2,12 @@
 
 import { createContext, useCallback, useContext } from "react";
 
+import { hasPerm } from "./perms";
 import type { Bootstrap } from "./types";
 
 const SessionContext = createContext<Bootstrap | null>(null);
 
-export function SessionProvider({
-  children,
-  value,
-}: {
-  children: React.ReactNode;
-  value: Bootstrap;
-}) {
+export function SessionProvider({ children, value }: { children: React.ReactNode; value: Bootstrap }) {
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }
 
@@ -24,5 +19,5 @@ export function useBootstrap(): Bootstrap {
 
 export function useCan(): (perm: string) => boolean {
   const { permissions } = useBootstrap();
-  return useCallback((perm: string) => permissions.includes(perm), [permissions]);
+  return useCallback((perm: string) => hasPerm(permissions, perm), [permissions]);
 }

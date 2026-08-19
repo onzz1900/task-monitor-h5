@@ -30,3 +30,5 @@ npm run dev                   # http://localhost:3000
 ```
 
 TMS 通过 `DATABASE_URL` 连这份本地库（未设置时也默认连 Compose 的 MySQL）。保留了哪些模板 chrome 文件见 [apps/tms/README.md](apps/tms/README.md)。
+
+用户 / 角色 / 菜单按官方若依字段落在 MySQL：`sys_user`、`sys_role`、`sys_menu`、`sys_dept`、`sys_user_role`、`sys_role_menu`，对照 [RuoYi-Vue](https://github.com/yangzongzhuan/RuoYi-Vue) `sql/ry_20260417.sql`。登录仍是 Better Auth。

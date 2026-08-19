@@ -1,9 +1,11 @@
-/** 会话解析与接口级 RBAC 校验。 */
+/** 会话解析与接口级 RBAC。权限来自 sys_*（若依），登录仍走 Better Auth。 */
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+
 import { auth } from "./auth";
-import { query } from "./db";
 import { ensureReady } from "./init";
+import { hasPerm } from "./perms";
+import { findSysUserByEmail, loadPermsForUser } from "./ruoyi";
 
 export type SessionUser = {
   id: string;
@@ -11,36 +13,34 @@ export type SessionUser = {
   name: string;
   role: string;
   permissions: string[];
+  sysUserId: number | null;
 };
-
-export async function permissionsForRole(roleCode: string): Promise<string[]> {
-  const rows = await query<{ code: string }>(
-    `SELECT p.code FROM permissions p
-     JOIN role_permissions rp ON rp.permission_id = p.id
-     JOIN roles r ON r.id = rp.role_id
-     WHERE r.code = ? ORDER BY p.id`,
-    [roleCode],
-  );
-  return rows.map((r) => r.code);
-}
 
 export async function getSessionUser(): Promise<SessionUser | null> {
   await ensureReady();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return null;
   const u = session.user as typeof session.user & { role?: string };
-  const role = u.role ?? "readonly";
+  const sys = await findSysUserByEmail(u.email);
+  const loaded = sys
+    ? await loadPermsForUser(Number(sys.user_id))
+    : { roleKeys: [] as string[], perms: [] as string[] };
+  const role = loaded.roleKeys[0] ?? u.role ?? "readonly";
   return {
     id: u.id,
     email: u.email,
-    name: u.name,
+    name: sys?.nick_name ?? u.name,
     role,
-    permissions: await permissionsForRole(role),
+    permissions: loaded.perms,
+    sysUserId: sys ? Number(sys.user_id) : null,
   };
 }
 
 export class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
     super(message);
   }
 }
@@ -49,7 +49,7 @@ export class ApiError extends Error {
 export async function requirePermission(code: string): Promise<SessionUser> {
   const user = await getSessionUser();
   if (!user) throw new ApiError(401, "未登录");
-  if (!user.permissions.includes(code)) throw new ApiError(403, `缺少权限：${code}`);
+  if (!hasPerm(user.permissions, code)) throw new ApiError(403, `缺少权限：${code}`);
   return user;
 }
 

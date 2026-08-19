@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { query } from "@/lib/db";
+import { hasPerm } from "@/lib/perms";
 import { getSessionUser } from "@/lib/rbac";
 import { serializeTask, type TaskRow } from "@/lib/tasks";
 import { toTableTask } from "@/lib/tms-map";
@@ -11,7 +12,7 @@ import { Tasks } from "./_components/tasks";
 export default async function Page() {
   const user = await getSessionUser();
   if (!user) redirect("/auth/v1/login");
-  if (!user.permissions.includes("task:read")) redirect("/unauthorized");
+  if (!hasPerm(user.permissions, "task:read")) redirect("/unauthorized");
 
   const rows = await query<TaskRow>("SELECT * FROM tasks ORDER BY (next_run_at IS NULL), next_run_at");
   const data = await Promise.all(rows.map(async (row) => toTableTask((await serializeTask(row)) as Task)));

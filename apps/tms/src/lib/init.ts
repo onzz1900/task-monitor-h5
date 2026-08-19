@@ -3,8 +3,10 @@
  * 每个 Route Handler 入口 await ensureReady() 即可，幂等且只执行一次。
  */
 import { getMigrations } from "better-auth/db/migration";
+
 import { auth } from "./auth";
 import { asCount, createDomainTables, execute, queryOne, waitForMysql } from "./db";
+import { seedRuoyi } from "./ruoyi-seed";
 import { computeNextRun } from "./schedule";
 
 const PERMISSIONS: [string, string][] = [
@@ -165,8 +167,8 @@ async function seedDomain(): Promise<void> {
     const { run, ...t } = spec;
     const nextRun = computeNextRun(
       t.schedule_kind as string,
-      (t.cron_expr as string) ?? null,
-      (t.interval_minutes as number) ?? null,
+      typeof t.cron_expr === "string" ? t.cron_expr : null,
+      typeof t.interval_minutes === "number" ? t.interval_minutes : null,
     );
     const info = await execute(
       `INSERT INTO tasks (
@@ -196,22 +198,22 @@ async function seedDomain(): Promise<void> {
         now,
       ],
     );
-    await execute(
-      "INSERT INTO task_runs (task_id, ran_at, ok, result_text, duration_ms) VALUES (?, ?, ?, ?, ?)",
-      [
-        info.insertId,
-        new Date(Date.now() - run.minutesAgo * 60_000).toISOString(),
-        run.ok,
-        run.text,
-        run.duration,
-      ],
-    );
+    await execute("INSERT INTO task_runs (task_id, ran_at, ok, result_text, duration_ms) VALUES (?, ?, ?, ?, ?)", [
+      info.insertId,
+      new Date(Date.now() - run.minutesAgo * 60_000).toISOString(),
+      run.ok,
+      run.text,
+      run.duration,
+    ]);
   }
 }
 
 async function seedUsers(): Promise<void> {
   for (const [email, password, name, role] of USERS) {
-    await auth.api.signUpEmail({ body: { email, password, name } });
+    const exists = await queryOne<{ id: string }>("SELECT id FROM `user` WHERE email = ?", [email]);
+    if (!exists) {
+      await auth.api.signUpEmail({ body: { email, password, name } });
+    }
     await execute("UPDATE `user` SET role = ? WHERE email = ?", [role, email]);
   }
 }
@@ -227,7 +229,11 @@ export function ensureReady(): Promise<void> {
     const seeded = await queryOne<{ n: number }>("SELECT COUNT(*) AS n FROM roles");
     if (asCount(seeded?.n) === 0) {
       await seedDomain();
-      await seedUsers();
+    }
+    await seedUsers();
+    const ruoyi = await queryOne<{ n: number }>("SELECT COUNT(*) AS n FROM sys_role");
+    if (asCount(ruoyi?.n) === 0) {
+      await seedRuoyi();
     }
   })().catch((err) => {
     readyPromise = null; // 失败不缓存，允许下次请求重试

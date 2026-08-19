@@ -1,21 +1,27 @@
 import { redirect } from "next/navigation";
 
-import { query } from "@/lib/db";
+import { hasPerm } from "@/lib/perms";
 import { getSessionUser } from "@/lib/rbac";
-import { toTableUser, type ApiUser } from "@/lib/tms-map";
+import { listDepts, listRoles, listUsers } from "@/lib/ruoyi";
 
-import { Users } from "./_components/users";
+import { RuoyiUsers } from "./_components/ruoyi-users";
 
 export default async function Page() {
   const user = await getSessionUser();
   if (!user) redirect("/auth/v1/login");
-  if (!user.permissions.includes("user:read")) redirect("/unauthorized");
+  if (!hasPerm(user.permissions, "system:user:list")) redirect("/unauthorized");
 
-  const users = await query<ApiUser>(
-    `SELECT u.id, u.email, u.name, u.role AS role_code, r.name AS role_name
-     FROM \`user\` u LEFT JOIN roles r ON r.code = u.role
-     ORDER BY u.email`,
+  const [users, depts, roles] = await Promise.all([listUsers(), listDepts(), listRoles()]);
+
+  return (
+    <RuoyiUsers
+      users={users}
+      depts={depts.map((d) => ({ dept_id: Number(d.dept_id), dept_name: d.dept_name }))}
+      roles={roles.map((r) => ({
+        role_id: Number(r.role_id),
+        role_name: r.role_name,
+        role_key: r.role_key,
+      }))}
+    />
   );
-
-  return <Users users={users.map(toTableUser)} />;
 }

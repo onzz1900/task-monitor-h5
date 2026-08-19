@@ -48,7 +48,26 @@ npm run dev
 | 值班 | `duty@tms.local` | `duty123` |
 | 只读 | `readonly@tms.local` | `read123` |
 
-登录后业务页：`/dashboard/tasks`、`/dashboard/users`、`/dashboard/roles`。侧栏 / 顶栏 / 主题仍是模板自带导航（与官方 demo 同一套）。
+登录后业务页：`/dashboard/tasks`、`/dashboard/users`、`/dashboard/roles`、`/dashboard/menus`。侧栏 / 顶栏 / 主题仍是模板自带导航（与官方 demo 同一套）。
+
+## 若依 RBAC（对照官方 SQL）
+
+用户 / 角色 / 菜单 / 部门表按官方 RuoYi-Vue 字段实现，**没有**自造业务列，也没有 RuoYi-Vue-Plus 租户列。对照源：
+
+[yangzongzhuan/RuoYi-Vue](https://github.com/yangzongzhuan/RuoYi-Vue) `sql/ry_20260417.sql`（与 gitee `y_project/RuoYi-Vue` 同源）。
+
+对照并落地的表：
+
+| 表 | 用途 |
+| --- | --- |
+| `sys_user` | 用户（`user_name` / `nick_name` / `email` / `phonenumber` / `sex` / `status` / `dept_id` / `remark` / `create_time`） |
+| `sys_role` | 角色（`role_name` / `role_key` / `role_sort` / `status`） |
+| `sys_menu` | 菜单（`menu_name` / `path` / `menu_type` / `perms` / `order_num` / `visible`） |
+| `sys_dept` | 部门（用户表 `dept_id` 需要） |
+| `sys_user_role` | 用户–角色 |
+| `sys_role_menu` | 角色–菜单（授权树） |
+
+登录仍走 Better Auth（`user` / `session` 等表）。`sys_*` 是 RBAC 真源：按邮箱对齐 `sys_user`，`role_key = admin` 为超级管理员。`sys_user.password` 保持官方列，哈希不写在该列（由 Better Auth 保管）。
 
 ## 保留的模板 chrome 文件（未重画）
 
@@ -77,7 +96,7 @@ npm run dev
 
 - Better Auth：`src/lib/auth.ts`、`src/app/api/auth/[...all]/route.ts`
 - 本地 MySQL + 种子（管理员 / 值班 / 只读）：`src/lib/db.ts`、`src/lib/init.ts`、`docker-compose.yml`
-- Route Handlers：`src/app/api/tasks`、`users`、`roles`、`meta`、`bootstrap`
-- 任务 / 用户 / 角色页只换数据源，表格仍用模板组件
+- Route Handlers：`src/app/api/tasks`、`/api/system/{users,roles,menus,depts}`、`meta`、`bootstrap`
+- 用户 / 角色 / 菜单页用模板 Table + Dialog + Field + Checkbox 树，数据来自 `sys_*`
 
 纸票版 / 控制台版只在仓库 `variants/` 存档，不参与 TMS 默认界面。
