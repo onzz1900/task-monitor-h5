@@ -10,7 +10,11 @@
     try {
       localStorage.setItem(KEY, next);
     } catch (err) {}
-    buttons.forEach((b) => b.classList.toggle("is-on", b.dataset.themeSet === next));
+    buttons.forEach((b) => {
+      const on = b.dataset.themeSet === next;
+      b.classList.toggle("is-on", on);
+      b.setAttribute("aria-pressed", String(on));
+    });
   }
 
   buttons.forEach((b) => b.addEventListener("click", () => apply(b.dataset.themeSet)));

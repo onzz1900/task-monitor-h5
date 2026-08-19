@@ -210,9 +210,12 @@ html[data-theme="dark"] .brand-mark {
 .theme-switch button:hover {
   color: var(--ink);
 }
+/* 选中态用主色底，避免浅色模式下把「深色」误读成当前主题 */
 .theme-switch button.is-on {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+  box-shadow: inset 0 0 0 1px var(--accent-soft);
 }
 
 /* ---------- page shell ---------- */
@@ -499,7 +502,7 @@ html[data-theme="dark"] .brand-mark {
   font-family: var(--serif);
   font-size: 12.5px;
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.08em;
   color: var(--ink-3);
   padding-left: 2px;
 }
@@ -694,7 +697,6 @@ html[data-theme="dark"] .brand-mark {
 .dots span.on {
   background: var(--accent);
 }
-.entry[data-tone="over"] .dots span.on,
 .card[data-blocked="1"] .dots span.on {
   background: var(--block);
 }
