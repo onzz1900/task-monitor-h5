@@ -1,13 +1,6 @@
 "use client";
 
-/** 客户端工具：认证、API 请求、时间格式化（统一北京时间）、皮肤。 */
-import { inferAdditionalFields } from "better-auth/client/plugins";
-import { createAuthClient } from "better-auth/react";
-import type { auth } from "./auth";
-
-export const authClient = createAuthClient({
-  plugins: [inferAdditionalFields<typeof auth>()],
-});
+/** 客户端工具：API 请求（经 BFF 代理到 FastAPI）、时间格式化（统一北京时间）、皮肤。 */
 
 export class RequestError extends Error {
   constructor(public status: number, message: string) {
@@ -24,12 +17,20 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
     let detail = `请求失败（${res.status}）`;
     try {
       const data = await res.json();
-      if (data?.detail) detail = data.detail;
-      else if (data?.message) detail = data.message;
+      if (typeof data?.detail === "string") detail = data.detail;
+      else if (typeof data?.message === "string") detail = data.message;
     } catch {}
     throw new RequestError(res.status, detail);
   }
   return res.json() as Promise<T>;
+}
+
+export function login(email: string, password: string): Promise<{ ok: boolean }> {
+  return api("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
+}
+
+export function logout(): Promise<{ ok: boolean }> {
+  return api("/api/auth/logout", { method: "POST" });
 }
 
 const dateFmt = new Intl.DateTimeFormat("zh-CN", {

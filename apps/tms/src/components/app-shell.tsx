@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { api, authClient, getSkin, setSkin, type Skin } from "@/lib/client";
+import { api, getSkin, logout, setSkin, type Skin } from "@/lib/client";
 import type { Bootstrap } from "@/lib/types";
 
 const BootstrapContext = createContext<Bootstrap | null>(null);
@@ -75,7 +75,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   const signOut = async () => {
-    await authClient.signOut();
+    await logout().catch(() => {});
     router.replace("/login");
   };
 

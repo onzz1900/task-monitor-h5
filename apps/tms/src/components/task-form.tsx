@@ -55,7 +55,7 @@ function fromTask(task?: Task): FormState {
     interval_minutes: task?.interval_minutes ?? 60,
     callback_enabled: Boolean(task?.callback_url),
     callback_url: task?.callback_url ?? "",
-    callback_timeout_ms: task?.callback_timeout_ms ?? 5000,
+    callback_timeout_ms: task?.callback_timeout_ms ?? 10000,
     callback_retries: task?.callback_retries ?? 3,
     callback_secret_ref: task?.callback_secret_ref ?? "",
     keep_runs: task?.keep_runs ?? 10,
