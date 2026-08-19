@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { login } from "@/lib/client";
+import { authClient } from "@/lib/client";
 
 const DEMO_ACCOUNTS = [
   { email: "admin@tms.local", password: "admin123", label: "管理员" },
@@ -25,13 +25,17 @@ export default function LoginPage() {
     e?.preventDefault();
     setBusy(true);
     setError(null);
-    try {
-      await login(em ?? email, pw ?? password);
-      router.replace("/tasks");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "登录失败，请检查邮箱与密码");
+    const { error: err } = await authClient.signIn.email({
+      email: em ?? email,
+      password: pw ?? password,
+    });
+    if (err) {
       setBusy(false);
+      setError(err.message ?? "登录失败，请检查邮箱与密码");
+      return;
     }
+    router.replace("/tasks");
+    router.refresh();
   };
 
   return (

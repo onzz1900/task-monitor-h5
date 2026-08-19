@@ -1,9 +1,19 @@
 "use client";
 
-/** 客户端工具：API 请求（经 BFF 代理到 FastAPI）、时间格式化（统一北京时间）、皮肤。 */
+/** 客户端工具：Better Auth、API 请求、时间格式化（统一北京时间）、皮肤。 */
+import { inferAdditionalFields } from "better-auth/client/plugins";
+import { createAuthClient } from "better-auth/react";
+import type { auth } from "./auth";
+
+export const authClient = createAuthClient({
+  plugins: [inferAdditionalFields<typeof auth>()],
+});
 
 export class RequestError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
     super(message);
   }
 }
@@ -19,18 +29,13 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
       const data = await res.json();
       if (typeof data?.detail === "string") detail = data.detail;
       else if (typeof data?.message === "string") detail = data.message;
-    } catch {}
+    } catch {
+      /* 非 JSON 错误体 */
+    }
     throw new RequestError(res.status, detail);
   }
+  if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
-}
-
-export function login(email: string, password: string): Promise<{ ok: boolean }> {
-  return api("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
-}
-
-export function logout(): Promise<{ ok: boolean }> {
-  return api("/api/auth/logout", { method: "POST" });
 }
 
 const dateFmt = new Intl.DateTimeFormat("zh-CN", {
@@ -60,14 +65,26 @@ export function fmtRelative(iso: string | null | undefined): string {
 
 export type Skin = "fable" | "console";
 
+const skinListeners = new Set<() => void>();
+
 export function getSkin(): Skin {
   if (typeof document === "undefined") return "fable";
   return document.documentElement.getAttribute("data-skin") === "console" ? "console" : "fable";
+}
+
+export function subscribeSkin(onStoreChange: () => void): () => void {
+  skinListeners.add(onStoreChange);
+  return () => {
+    skinListeners.delete(onStoreChange);
+  };
 }
 
 export function setSkin(skin: Skin): void {
   document.documentElement.setAttribute("data-skin", skin);
   try {
     localStorage.setItem("tms-skin", skin);
-  } catch {}
+  } catch {
+    /* ignore */
+  }
+  skinListeners.forEach((listener) => listener());
 }
