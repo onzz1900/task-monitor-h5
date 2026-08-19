@@ -60,7 +60,7 @@
 :root,
 [data-skin="studio"] {
   --radius: 0.625rem;
-  --font-sans-stack: "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
+  --font-sans-stack: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
   --font-mono-stack: ui-monospace, "SFMono-Regular", Menlo, monospace;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
