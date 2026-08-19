@@ -29,11 +29,38 @@ python3 -m http.server 8080
 
 电商运营场景的模拟任务（见 `data.js`）：评价采集、聊天记录采集、绘图记录采集、转化率监控、数据监控、报表任务。页面以 `data.js` 中固定的时间基准计算相对时间，保证演示效果稳定。
 
+## 任务登记中心（register.html）
+
+顶栏「任务登记」进入 `register.html`：登记 / 编辑 / 查看任务配置，纸票视觉不变。无后端 —— 数据 = `registry-data.js` 种子 + 浏览器 `localStorage` 覆盖（键 `tcf-registry-v1`），「重置演示数据」可恢复种子。
+
+调度为工程化实现：内置 5 字段 cron 解析器（支持 `*`、`a,b`、`a-b`、`*/n`、`a-b/n`，日/周取「或」），统一按 **Asia/Shanghai** 推导下次流转，表单内实时预览下一次触发时刻；固定间隔以 `updatedAt` 为锚点对齐。
+
+### 登记数据模型（registry shape）
+
+与看板任务同源的形状，后续 ops-console 等其他皮肤可直接共享：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | string | 稳定任务编号，`REG-1001` 起自增 |
+| `name` / `description` | string | 名称（必填）/ 描述 |
+| `owner` | string | 负责人 |
+| `type` | `collect` \| `monitor` \| `report` | 采集 / 监控 / 报表 |
+| `points` | `{ total, note }` | 点位数量（必填，≥1）+ 说明 |
+| `schedule` | `{ kind, cron, intervalMinutes, timezone }` | `kind` ∈ `cron`/`interval`；`timezone` 固定 `Asia/Shanghai`；**下次流转由此推导** |
+| `callback` | `null` 或 `{ url, timeoutMs, retries, secretRef }` | 可选 POST 回调：地址、超时（默认 10000ms）、失败重试（默认 3 次）、**secretRef 只存引用名，密钥本体不进前端** |
+| `backup` | `{ keepRuns }` | 保留最近 N 次运行结果，默认 10 |
+| `createdAt` / `updatedAt` | ISO string | 创建 / 更新时间 |
+
+可选的 secretRef 引用名：`ops-callback-key` / `tmall-open-api` / `jd-open-api`（见 `registry-data.js`）。
+
 ## 文件
 
 | 文件 | 说明 |
 | --- | --- |
-| `index.html` | 页面骨架与主题预加载 |
-| `styles.css` | 浅色纸面 / 暖炭深色两套主题 |
-| `app.js` | 统计、筛选、列表渲染、详情面板、主题切换 |
-| `data.js` | 模拟任务数据与时间基准 |
+| `index.html` | 看板页面骨架与主题预加载 |
+| `styles.css` | 浅色纸面 / 暖炭深色两套主题（含登记页样式） |
+| `app.js` | 看板：统计、筛选、列表渲染、详情面板、主题切换 |
+| `data.js` | 看板模拟任务数据与时间基准 |
+| `register.html` | 任务登记中心页面 |
+| `registry.js` | 登记逻辑：cron 解析、下次流转推导、表单、localStorage 存取 |
+| `registry-data.js` | 登记种子数据、类型 / secretRef 字典与默认值 |
