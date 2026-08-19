@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { db } from "@/lib/db";
+import { query } from "@/lib/db";
 import { getSessionUser } from "@/lib/rbac";
 import { serializeTask, type TaskRow } from "@/lib/tasks";
 import { toTableTask } from "@/lib/tms-map";
@@ -13,10 +13,8 @@ export default async function Page() {
   if (!user) redirect("/auth/v1/login");
   if (!user.permissions.includes("task:read")) redirect("/unauthorized");
 
-  const rows = db()
-    .prepare("SELECT * FROM tasks ORDER BY next_run_at IS NULL, next_run_at")
-    .all() as TaskRow[];
-  const data = rows.map((row) => toTableTask(serializeTask(row) as Task));
+  const rows = await query<TaskRow>("SELECT * FROM tasks ORDER BY (next_run_at IS NULL), next_run_at");
+  const data = await Promise.all(rows.map(async (row) => toTableTask((await serializeTask(row)) as Task)));
 
   return (
     <div className="flex flex-col gap-4">

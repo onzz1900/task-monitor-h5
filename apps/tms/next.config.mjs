@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactCompiler: true,
-  serverExternalPackages: ["better-sqlite3"],
+  serverExternalPackages: ["mysql2"],
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },

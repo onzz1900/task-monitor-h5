@@ -2,7 +2,7 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { auth } from "./auth";
-import { db } from "./db";
+import { query } from "./db";
 import { ensureReady } from "./init";
 
 export type SessionUser = {
@@ -13,15 +13,14 @@ export type SessionUser = {
   permissions: string[];
 };
 
-export function permissionsForRole(roleCode: string): string[] {
-  const rows = db()
-    .prepare(
-      `SELECT p.code FROM permissions p
-       JOIN role_permissions rp ON rp.permission_id = p.id
-       JOIN roles r ON r.id = rp.role_id
-       WHERE r.code = ? ORDER BY p.id`
-    )
-    .all(roleCode) as { code: string }[];
+export async function permissionsForRole(roleCode: string): Promise<string[]> {
+  const rows = await query<{ code: string }>(
+    `SELECT p.code FROM permissions p
+     JOIN role_permissions rp ON rp.permission_id = p.id
+     JOIN roles r ON r.id = rp.role_id
+     WHERE r.code = ? ORDER BY p.id`,
+    [roleCode],
+  );
   return rows.map((r) => r.code);
 }
 
@@ -36,7 +35,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     email: u.email,
     name: u.name,
     role,
-    permissions: permissionsForRole(role),
+    permissions: await permissionsForRole(role),
   };
 }
 

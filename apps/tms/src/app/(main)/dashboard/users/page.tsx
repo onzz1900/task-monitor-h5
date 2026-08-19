@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { db } from "@/lib/db";
+import { query } from "@/lib/db";
 import { getSessionUser } from "@/lib/rbac";
 import { toTableUser, type ApiUser } from "@/lib/tms-map";
 
@@ -11,13 +11,11 @@ export default async function Page() {
   if (!user) redirect("/auth/v1/login");
   if (!user.permissions.includes("user:read")) redirect("/unauthorized");
 
-  const users = db()
-    .prepare(
-      `SELECT u.id, u.email, u.name, u.role AS role_code, r.name AS role_name
-       FROM user u LEFT JOIN roles r ON r.code = u.role
-       ORDER BY u.email`,
-    )
-    .all() as ApiUser[];
+  const users = await query<ApiUser>(
+    `SELECT u.id, u.email, u.name, u.role AS role_code, r.name AS role_name
+     FROM \`user\` u LEFT JOIN roles r ON r.code = u.role
+     ORDER BY u.email`,
+  );
 
   return <Users users={users.map(toTableUser)} />;
 }

@@ -1,6 +1,6 @@
 # 任务管理系统（TMS）
 
-Studio Admin 官方模板为壳，本仓库业务（Better Auth + SQLite + Route Handlers）接在上面。
+Studio Admin 官方模板为壳，本仓库业务（Better Auth + MySQL + Route Handlers）接在上面。
 
 底模：[arhamkhnz/next-shadcn-admin-dashboard](https://github.com/arhamkhnz/next-shadcn-admin-dashboard)（Next.js 16 + TypeScript + Tailwind v4 + shadcn）。对照官方演示：[next-shadcn-admin-dashboard.vercel.app](https://next-shadcn-admin-dashboard.vercel.app)。
 
@@ -8,19 +8,30 @@ Studio Admin 官方模板为壳，本仓库业务（Better Auth + SQLite + Route
 
 ## 启动
 
+本地演示用 Docker 起 MySQL（账号写在 compose 里，不是生产密码），再跑 Next：
+
 ```bash
 cd apps/tms
+cp .env.example .env    # DATABASE_URL=mysql://tms:tmsdemo@127.0.0.1:3306/tms
 npm install
+docker compose up -d    # MySQL + migrate/seed（管理员 / 值班 / 只读）
 npm run dev
 ```
 
-打开 <http://localhost:3000>（会进官方 Login v1）。未登录访问 `/dashboard/*` 会回到登录页。
+打开 <http://localhost:3000>（官方 Login v1）。未登录访问 `/dashboard/*` 会回到登录页。
+
+指向已有 MySQL：把 `.env` 里的 `DATABASE_URL` 改成你的 `mysql://user:pass@host:3306/dbname`，然后：
+
+```bash
+npm run db:setup        # Better Auth 建表 + 业务表 + 演示种子（已有角色则跳过种子）
+npm run dev
+```
 
 | 变量 | 默认 | 说明 |
 | --- | --- | --- |
+| `DATABASE_URL` | `mysql://tms:tmsdemo@127.0.0.1:3306/tms` | MySQL 连接串（Better Auth 与业务表共用） |
 | `BETTER_AUTH_SECRET` | 内置演示密钥 | 生产环境务必替换 |
 | `BETTER_AUTH_URL` | `http://localhost:3000` | 本应用对外地址 |
-| `TMS_DB_FILE` | `apps/tms/data/tms.db` | SQLite 文件路径 |
 
 ## 演示账号
 
@@ -58,7 +69,7 @@ npm run dev
 ## 接到模板上的业务
 
 - Better Auth：`src/lib/auth.ts`、`src/app/api/auth/[...all]/route.ts`
-- SQLite + 种子（管理员 / 值班 / 只读）：`src/lib/db.ts`、`src/lib/init.ts`
+- MySQL + 种子（管理员 / 值班 / 只读）：`src/lib/db.ts`、`src/lib/init.ts`、`docker-compose.yml`
 - Route Handlers：`src/app/api/tasks`、`users`、`roles`、`meta`、`bootstrap`
 - 任务 / 用户 / 角色页只换数据源，表格仍用模板组件
 

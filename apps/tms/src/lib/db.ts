@@ -1,89 +1,145 @@
 /**
- * SQLite 数据库（系统记录源）。
- * 表结构只用 INTEGER/TEXT 等可平移类型，后续可迁移到 Postgres。
+ * MySQL 连接池（系统记录源）。连接串来自 DATABASE_URL（mysql://...）。
  */
-import Database from "better-sqlite3";
-import fs from "node:fs";
-import path from "node:path";
+import mysql from "mysql2/promise";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-fs.mkdirSync(DATA_DIR, { recursive: true });
+const DEFAULT_DATABASE_URL = "mysql://tms:tmsdemo@127.0.0.1:3306/tms";
 
-export const DB_FILE = process.env.TMS_DB_FILE ?? path.join(DATA_DIR, "tms.db");
-
-let _db: Database.Database | null = null;
-
-export function db(): Database.Database {
-  if (_db) return _db;
-  _db = new Database(DB_FILE);
-  _db.pragma("journal_mode = WAL");
-  _db.pragma("foreign_keys = ON");
-  return _db;
+export function getDatabaseUrl(): string {
+  const url = process.env.DATABASE_URL ?? DEFAULT_DATABASE_URL;
+  if (!url.startsWith("mysql://") && !url.startsWith("mysql2://")) {
+    throw new Error("DATABASE_URL must be a mysql:// connection string");
+  }
+  return url.replace(/^mysql2:/, "mysql:");
 }
 
-export function createDomainTables(): void {
-  db().exec(`
+let _pool: mysql.Pool | null = null;
+
+export function pool(): mysql.Pool {
+  if (_pool) return _pool;
+  _pool = mysql.createPool({
+    uri: getDatabaseUrl(),
+    waitForConnections: true,
+    connectionLimit: 10,
+    multipleStatements: true,
+  });
+  return _pool;
+}
+
+type SqlValue = string | number | boolean | Date | Buffer | null | undefined | unknown;
+
+function bind(params: SqlValue[]): (string | number | boolean | Date | Buffer | null)[] {
+  return params.map((value) => {
+    if (value === undefined || value === null) return null;
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return value;
+    if (value instanceof Date || Buffer.isBuffer(value)) return value;
+    return String(value);
+  });
+}
+
+export async function query<T>(sql: string, params: SqlValue[] = []): Promise<T[]> {
+  const [rows] = await pool().execute(sql, bind(params));
+  return rows as T[];
+}
+
+export async function queryOne<T>(sql: string, params: SqlValue[] = []): Promise<T | undefined> {
+  const rows = await query<T>(sql, params);
+  return rows[0];
+}
+
+export async function execute(sql: string, params: SqlValue[] = []): Promise<mysql.ResultSetHeader> {
+  const [result] = await pool().execute(sql, bind(params));
+  return result as mysql.ResultSetHeader;
+}
+
+export async function exec(sql: string): Promise<void> {
+  await pool().query(sql);
+}
+
+export async function waitForMysql(attempts = 40, delayMs = 500): Promise<void> {
+  let last: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      await pool().query("SELECT 1");
+      return;
+    } catch (err) {
+      last = err;
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+  throw last instanceof Error ? last : new Error("MySQL is not reachable");
+}
+
+export function asCount(n: unknown): number {
+  return Number(n ?? 0);
+}
+
+export async function createDomainTables(): Promise<void> {
+  await exec(`
     CREATE TABLE IF NOT EXISTS roles (
-      id INTEGER PRIMARY KEY,
-      code TEXT NOT NULL UNIQUE,
-      name TEXT NOT NULL,
-      description TEXT NOT NULL DEFAULT ''
-    );
+      id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      code VARCHAR(64) NOT NULL UNIQUE,
+      name VARCHAR(128) NOT NULL,
+      description VARCHAR(512) NOT NULL DEFAULT ''
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
     CREATE TABLE IF NOT EXISTS permissions (
-      id INTEGER PRIMARY KEY,
-      code TEXT NOT NULL UNIQUE,
-      name TEXT NOT NULL
-    );
+      id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      code VARCHAR(64) NOT NULL UNIQUE,
+      name VARCHAR(128) NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
     CREATE TABLE IF NOT EXISTS role_permissions (
-      role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
-      permission_id INTEGER NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
-      PRIMARY KEY (role_id, permission_id)
-    );
+      role_id INT NOT NULL,
+      permission_id INT NOT NULL,
+      PRIMARY KEY (role_id, permission_id),
+      CONSTRAINT fk_rp_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
+      CONSTRAINT fk_rp_perm FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
     CREATE TABLE IF NOT EXISTS menus (
-      id INTEGER PRIMARY KEY,
-      title TEXT NOT NULL,
-      path TEXT NOT NULL,
-      sort INTEGER NOT NULL DEFAULT 0,
-      permission_code TEXT NOT NULL
-    );
+      id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      title VARCHAR(128) NOT NULL,
+      path VARCHAR(255) NOT NULL,
+      sort INT NOT NULL DEFAULT 0,
+      permission_code VARCHAR(64) NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
     CREATE TABLE IF NOT EXISTS tasks (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      code TEXT NOT NULL UNIQUE,
-      title TEXT NOT NULL,
-      description TEXT NOT NULL DEFAULT '',
-      type TEXT NOT NULL DEFAULT 'review',
-      status TEXT NOT NULL DEFAULT '待流转',
-      owner_name TEXT NOT NULL DEFAULT '',
-      channel TEXT NOT NULL DEFAULT '',
-      points_done INTEGER NOT NULL DEFAULT 0,
-      points_total INTEGER NOT NULL DEFAULT 1,
-      points_note TEXT NOT NULL DEFAULT '',
-      schedule_kind TEXT NOT NULL DEFAULT 'cron',
-      cron_expr TEXT,
-      interval_minutes INTEGER,
-      timezone TEXT NOT NULL DEFAULT 'Asia/Shanghai',
-      next_run_at TEXT,
-      callback_url TEXT,
-      callback_timeout_ms INTEGER NOT NULL DEFAULT 10000,
-      callback_retries INTEGER NOT NULL DEFAULT 3,
-      callback_secret_ref TEXT,
-      keep_runs INTEGER NOT NULL DEFAULT 10,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    );
+      id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      code VARCHAR(64) NOT NULL UNIQUE,
+      title VARCHAR(255) NOT NULL,
+      description TEXT NOT NULL,
+      type VARCHAR(32) NOT NULL DEFAULT 'review',
+      status VARCHAR(32) NOT NULL DEFAULT '待流转',
+      owner_name VARCHAR(128) NOT NULL DEFAULT '',
+      channel VARCHAR(255) NOT NULL DEFAULT '',
+      points_done INT NOT NULL DEFAULT 0,
+      points_total INT NOT NULL DEFAULT 1,
+      points_note VARCHAR(512) NOT NULL DEFAULT '',
+      schedule_kind VARCHAR(16) NOT NULL DEFAULT 'cron',
+      cron_expr VARCHAR(64) NULL,
+      interval_minutes INT NULL,
+      timezone VARCHAR(64) NOT NULL DEFAULT 'Asia/Shanghai',
+      next_run_at VARCHAR(64) NULL,
+      callback_url VARCHAR(512) NULL,
+      callback_timeout_ms INT NOT NULL DEFAULT 10000,
+      callback_retries INT NOT NULL DEFAULT 3,
+      callback_secret_ref VARCHAR(128) NULL,
+      keep_runs INT NOT NULL DEFAULT 10,
+      created_at VARCHAR(64) NOT NULL,
+      updated_at VARCHAR(64) NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
     CREATE TABLE IF NOT EXISTS task_runs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      task_id INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
-      ran_at TEXT NOT NULL,
-      ok INTEGER NOT NULL DEFAULT 1,
-      result_text TEXT NOT NULL DEFAULT '',
-      duration_ms INTEGER NOT NULL DEFAULT 0
-    );
-    CREATE INDEX IF NOT EXISTS idx_task_runs_task ON task_runs(task_id, ran_at DESC);
+      id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      task_id INT NOT NULL,
+      ran_at VARCHAR(64) NOT NULL,
+      ok TINYINT NOT NULL DEFAULT 1,
+      result_text TEXT NOT NULL,
+      duration_ms INT NOT NULL DEFAULT 0,
+      CONSTRAINT fk_runs_task FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+      INDEX idx_task_runs_task (task_id, ran_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 }

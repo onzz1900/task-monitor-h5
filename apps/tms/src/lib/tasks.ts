@@ -1,5 +1,5 @@
 /** 任务领域逻辑：校验、序列化、模拟运行、备份裁剪。 */
-import { db } from "./db";
+import { asCount, execute, query, queryOne } from "./db";
 import { SECRET_REFS, STATUSES, TASK_TYPES } from "./meta";
 import { computeNextRun, isValidCron } from "./schedule";
 import { ApiError } from "./rbac";
@@ -82,12 +82,11 @@ export function normalizeInput(body: TaskInput): TaskInput {
   return t;
 }
 
-export function serializeTask(row: TaskRow, withRuns = false) {
-  const runs = db()
-    .prepare(
-      "SELECT id, ran_at, ok, result_text, duration_ms FROM task_runs WHERE task_id = ? ORDER BY ran_at DESC LIMIT ?"
-    )
-    .all(row.id, withRuns ? 100 : 1) as Record<string, unknown>[];
+export async function serializeTask(row: TaskRow, withRuns = false) {
+  const runs = await query<Record<string, unknown>>(
+    "SELECT id, ran_at, ok, result_text, duration_ms FROM task_runs WHERE task_id = ? ORDER BY ran_at DESC LIMIT ?",
+    [row.id, withRuns ? 100 : 1],
+  );
   const toRun = (r: Record<string, unknown>) => ({ ...r, ok: Boolean(r.ok) });
   return {
     ...row,
@@ -96,15 +95,15 @@ export function serializeTask(row: TaskRow, withRuns = false) {
   };
 }
 
-export function getTask(id: number): TaskRow {
-  const row = db().prepare("SELECT * FROM tasks WHERE id = ?").get(id) as TaskRow | undefined;
+export async function getTask(id: number): Promise<TaskRow> {
+  const row = await queryOne<TaskRow>("SELECT * FROM tasks WHERE id = ?", [id]);
   if (!row) throw new ApiError(404, "任务不存在");
   return row;
 }
 
-export function nextTaskCode(): string {
-  const { n } = db().prepare("SELECT COUNT(*) AS n FROM tasks").get() as { n: number };
-  return `FL-${3100 + n}`;
+export async function nextTaskCode(): Promise<string> {
+  const row = await queryOne<{ n: number }>("SELECT COUNT(*) AS n FROM tasks");
+  return `FL-${3100 + asCount(row?.n)}`;
 }
 
 function randInt(min: number, max: number): number {
@@ -134,15 +133,15 @@ export function mockRunResult(task: TaskRow): { ok: boolean; text: string } {
 }
 
 /** 运行一次（模拟结果入库），并把备份裁剪到最近 keep_runs 次。 */
-export function runTask(id: number): TaskRow {
-  const d = db();
-  const task = getTask(id);
+export async function runTask(id: number): Promise<TaskRow> {
+  const task = await getTask(id);
   const now = new Date();
   const { ok, text } = mockRunResult(task);
 
-  d.prepare(
-    "INSERT INTO task_runs (task_id, ran_at, ok, result_text, duration_ms) VALUES (?, ?, ?, ?, ?)"
-  ).run(id, now.toISOString(), ok ? 1 : 0, text, randInt(5000, 90000));
+  await execute(
+    "INSERT INTO task_runs (task_id, ran_at, ok, result_text, duration_ms) VALUES (?, ?, ?, ?, ?)",
+    [id, now.toISOString(), ok ? 1 : 0, text, randInt(5000, 90000)],
+  );
 
   let pointsDone = task.points_done as number;
   const total = task.points_total as number;
@@ -157,17 +156,24 @@ export function runTask(id: number): TaskRow {
     task.schedule_kind as string,
     task.cron_expr as string | null,
     task.interval_minutes as number | null,
-    now
+    now,
   );
-  d.prepare(
-    "UPDATE tasks SET points_done = ?, status = ?, next_run_at = ?, updated_at = ? WHERE id = ?"
-  ).run(pointsDone, status, nextRun, now.toISOString(), id);
+  await execute("UPDATE tasks SET points_done = ?, status = ?, next_run_at = ?, updated_at = ? WHERE id = ?", [
+    pointsDone,
+    status,
+    nextRun,
+    now.toISOString(),
+    id,
+  ]);
 
-  d.prepare(
+  await execute(
     `DELETE FROM task_runs WHERE task_id = ? AND id NOT IN (
-       SELECT id FROM task_runs WHERE task_id = ? ORDER BY ran_at DESC LIMIT ?
-     )`
-  ).run(id, id, task.keep_runs as number);
+       SELECT id FROM (
+         SELECT id FROM task_runs WHERE task_id = ? ORDER BY ran_at DESC LIMIT ?
+       ) kept
+     )`,
+    [id, id, task.keep_runs as number],
+  );
 
   return getTask(id);
 }
