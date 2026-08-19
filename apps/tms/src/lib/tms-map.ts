@@ -1,8 +1,48 @@
-/** Map TMS domain records onto official Studio Admin table row shapes. */
-import type { UserRow, UserTeam } from "@/app/(main)/dashboard/users/_components/data";
+/** Map TMS domain records onto official Studio Admin table / kanban shapes. */
+
+import { columnIds } from "@/app/(main)/dashboard/kanban/_components/data";
+import type {
+  BoardState,
+  ColumnId,
+  Task as KanbanTask,
+  TaskTeam,
+} from "@/app/(main)/dashboard/kanban/_components/types";
 import type { Role } from "@/app/(main)/dashboard/roles/_components/roles-table/data";
 import type { Task as TableTask } from "@/app/(main)/dashboard/tasks/_components/data";
+import type { UserRow, UserTeam } from "@/app/(main)/dashboard/users/_components/data";
+
 import type { Task } from "./types";
+
+export const STATUS_TO_COLUMN: Record<string, ColumnId> = {
+  待流转: "planned",
+  运行中: "building",
+  已阻塞: "qa",
+  本轮已完成: "shipped",
+};
+
+export const COLUMN_TO_STATUS: Record<ColumnId, string> = {
+  ideas: "ideas",
+  planned: "待流转",
+  building: "运行中",
+  qa: "已阻塞",
+  shipped: "本轮已完成",
+};
+
+export function statusToColumn(status: string): ColumnId {
+  return STATUS_TO_COLUMN[status] ?? "ideas";
+}
+
+const TYPE_TO_TEAM: Record<string, TaskTeam> = {
+  review: "Docs",
+  chat: "Product",
+  draw: "Design",
+  conv: "Data",
+  monitor: "Platform",
+  report: "Finance Ops",
+};
+
+const OWNER_TONE =
+  "[&_[data-slot=avatar-fallback]]:bg-zinc-100 [&_[data-slot=avatar-fallback]]:text-zinc-700 after:border-zinc-200 dark:[&_[data-slot=avatar-fallback]]:bg-zinc-500/15 dark:[&_[data-slot=avatar-fallback]]:text-zinc-300 dark:after:border-zinc-500/20";
 
 const TYPE_TO_LABEL: Record<string, string> = {
   review: "documentation",
@@ -38,6 +78,35 @@ const ROLE_TEAM: Record<string, UserTeam> = {
   duty: "Customer Ops",
   readonly: "Compliance",
 };
+
+function kanbanPriority(status: string): KanbanTask["priority"] {
+  if (status === "已阻塞") return "High";
+  if (status === "运行中") return "Medium";
+  return "Low";
+}
+
+export function toKanbanTask(task: Task): KanbanTask {
+  const total = task.points_total || 1;
+  return {
+    id: String(task.id),
+    title: task.title,
+    description: task.description || task.code,
+    priority: kanbanPriority(task.status),
+    dueDate: task.code,
+    progress: Math.min(100, Math.round((task.points_done / total) * 100)),
+    owner: { name: task.owner_name || "—", tone: OWNER_TONE },
+    team: TYPE_TO_TEAM[task.type] ?? "Platform",
+    insights: [{ label: "Documents", count: task.points_total }],
+  };
+}
+
+export function toKanbanBoard(tasks: Task[]): BoardState {
+  const board = Object.fromEntries(columnIds.map((id) => [id, [] as KanbanTask[]])) as BoardState;
+  for (const task of tasks) {
+    board[statusToColumn(task.status)].push(toKanbanTask(task));
+  }
+  return board;
+}
 
 export function toTableTask(task: Task): TableTask {
   return {

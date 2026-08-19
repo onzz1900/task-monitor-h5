@@ -71,7 +71,9 @@ npm run dev
 
 登录仍走 Better Auth（`user` / `session` 等表）。`sys_*` 是 RBAC 真源：按邮箱对齐 `sys_user`，`role_key = admin` 为超级管理员（`perms=["*"]`，菜单树勾选不能关掉超管）。`sys_user.password` 保持官方列，哈希不写在该列（由 Better Auth 保管）。
 
-每次请求从库重读 `sys_user_role` / `sys_role_menu` / `sys_user.status`（布局 `force-dynamic`）。非超管侧栏只保留其有权的业务项（任务 / 用户 / 角色 / 菜单），模板演示页（CRM、财务等）仍给超管看、对值班/只读隐藏。直打 `/dashboard/users|roles|menus` 缺 `system:*:list` 会到 `/unauthorized`。未登录访问 `/dashboard/*` 回 Login v1。`sys_user.status=1`（停用）下一请求起 API/页不可用。登出走 Better Auth `signOut`。
+每次请求从库重读 `sys_user_role` / `sys_role_menu` / `sys_user.status`（布局 `force-dynamic`）。非超管侧栏只保留其有权的业务项（任务 / 看板 / 用户 / 角色 / 菜单），模板演示页（CRM、财务等）仍给超管看、对值班/只读隐藏。直打 `/dashboard/users|roles|menus` 缺 `system:*:list` 会到 `/unauthorized`。未登录访问 `/dashboard/*` 回 Login v1。`sys_user.status=1`（停用）下一请求起 API/页不可用。登出走 Better Auth `signOut`。
+
+`/dashboard/kanban` 用官方模板看板壳，卡片来自同一张 `tasks` 表。列对照：待流转→planned，运行中→building，已阻塞→qa，本轮已完成→shipped，其余→ideas。拖到另一列会 `PATCH /api/tasks/:id` 写回 `tasks.status`（需 `task:update`），失败则回弹。`/dashboard/tasks` 表格仍在。
 
 ## 保留的模板 chrome 文件（未重画）
 
@@ -94,6 +96,7 @@ npm run dev
 | Login 表单 | `src/app/(main)/auth/_components/login-form.tsx` |
 | 应用名 / meta | `src/config/app-config.ts` |
 | Tasks 表格 UI | `src/app/(main)/dashboard/tasks/_components/tasks.tsx`、`columns.tsx`、`tasks-toolbar.tsx` |
+| Kanban 看板 UI | `src/app/(main)/dashboard/kanban/_components/kanban.tsx`、`kanban-column.tsx`、`task-card.tsx` |
 | Users / Roles 表格 UI | `src/app/(main)/dashboard/users/_components/*`、`roles/_components/*` |
 
 ## 接到模板上的业务

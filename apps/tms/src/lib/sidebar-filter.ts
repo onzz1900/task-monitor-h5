@@ -8,6 +8,7 @@ import { hasPerm } from "./perms";
 
 const URL_PERMS: Record<string, string> = {
   "/dashboard/tasks": "task:read",
+  "/dashboard/kanban": "task:read",
   "/dashboard/users": "system:user:list",
   "/dashboard/roles": "system:role:list",
   "/dashboard/menus": "system:menu:list",

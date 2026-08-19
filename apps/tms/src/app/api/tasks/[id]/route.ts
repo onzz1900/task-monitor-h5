@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+
 import { execute } from "@/lib/db";
-import { handleApiError, requirePermission } from "@/lib/rbac";
+import { STATUSES } from "@/lib/meta";
+import { ApiError, handleApiError, requirePermission } from "@/lib/rbac";
 import { computeNextRun } from "@/lib/schedule";
 import { getTask, normalizeInput, serializeTask } from "@/lib/tasks";
+import { COLUMN_TO_STATUS } from "@/lib/tms-map";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -55,6 +58,27 @@ export async function PUT(req: Request, ctx: Ctx) {
       ],
     );
     return NextResponse.json(await serializeTask(await getTask(task.id), true));
+  } catch (err) {
+    return handleApiError(err);
+  }
+}
+
+const ALLOWED_STATUS = new Set<string>([...STATUSES, ...Object.values(COLUMN_TO_STATUS)]);
+
+export async function PATCH(req: Request, ctx: Ctx) {
+  try {
+    await requirePermission("task:update");
+    const { id } = await ctx.params;
+    const task = await getTask(Number(id));
+    const body = (await req.json()) as { status?: string };
+    const status = String(body.status ?? "").trim();
+    if (!ALLOWED_STATUS.has(status)) throw new ApiError(400, "状态无效");
+    await execute("UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?", [
+      status,
+      new Date().toISOString(),
+      task.id,
+    ]);
+    return NextResponse.json(await serializeTask(await getTask(task.id)));
   } catch (err) {
     return handleApiError(err);
   }

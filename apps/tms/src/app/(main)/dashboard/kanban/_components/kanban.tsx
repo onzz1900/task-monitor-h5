@@ -35,6 +35,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { COLUMN_TO_STATUS, toKanbanBoard } from "@/lib/tms-map";
+import type { Task as DomainTask } from "@/lib/types";
 
 import { columnIds, columns } from "./data";
 import { KanbanColumn } from "./kanban-column";
@@ -105,7 +107,38 @@ export function Kanban({ initialBoard }: KanbanProps) {
 
     if (source.type === "column") {
       setColumnOrder((currentOrder) => move(currentOrder, event));
+      return;
     }
+
+    if (source.type !== "task" || !isTaskDragData(source.data)) {
+      return;
+    }
+
+    const fromColumn = source.data.columnId;
+    const toColumn = isSortable(source) && isColumnId(source.group) ? source.group : fromColumn;
+    if (toColumn === fromColumn) {
+      return;
+    }
+
+    const taskId = source.data.task.id;
+    const snapshot = boardBeforeDrag.current;
+    void (async () => {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: COLUMN_TO_STATUS[toColumn] }),
+      });
+      if (!res.ok) {
+        setBoard(snapshot);
+        return;
+      }
+      const list = await fetch("/api/tasks");
+      if (!list.ok) {
+        setBoard(snapshot);
+        return;
+      }
+      setBoard(toKanbanBoard((await list.json()) as DomainTask[]));
+    })();
   }
 
   return (
