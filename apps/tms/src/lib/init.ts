@@ -204,22 +204,20 @@ async function seedUsers(): Promise<void> {
 let readyPromise: Promise<void> | null = null;
 
 export function ensureReady(): Promise<void> {
-  if (!readyPromise) {
-    readyPromise = (async () => {
-      const { runMigrations } = await getMigrations(auth.options);
-      await runMigrations();
-      createDomainTables();
-      const seeded = db()
-        .prepare("SELECT COUNT(*) AS n FROM roles")
-        .get() as { n: number };
-      if (seeded.n === 0) {
-        seedDomain();
-        await seedUsers();
-      }
-    })().catch((err) => {
-      readyPromise = null; // 失败不缓存，允许下次请求重试
-      throw err;
-    });
-  }
+  readyPromise ??= (async () => {
+    const { runMigrations } = await getMigrations(auth.options);
+    await runMigrations();
+    createDomainTables();
+    const seeded = db()
+      .prepare("SELECT COUNT(*) AS n FROM roles")
+      .get() as { n: number };
+    if (seeded.n === 0) {
+      seedDomain();
+      await seedUsers();
+    }
+  })().catch((err) => {
+    readyPromise = null; // 失败不缓存，允许下次请求重试
+    throw err;
+  });
   return readyPromise;
 }
