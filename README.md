@@ -19,13 +19,10 @@ python3 -m http.server 4173
 
 ## 任务管理系统（TMS）
 
-静态原型之外，任务管理系统的首个版本由两部分组成：主后端 [`backend/`](backend/)（FastAPI + SQLite + fastapi-users，系统记录源）与前端 [`apps/tms/`](apps/tms/)（Next.js + Tailwind + shadcn/ui，Route Handlers 仅作薄代理）。登录、菜单与权限、用户与角色、任务的登记 / 修改 / 运行，默认纸票版皮肤、可切换控制台版皮肤。启动方式与数据模型见 [apps/tms/README.md](apps/tms/README.md)：
+静态原型之外，[`apps/tms/`](apps/tms/) 是任务管理系统的首个版本（Next.js Route Handlers + SQLite + Better Auth）：登录、菜单与权限、用户与角色、任务的登记 / 修改 / 运行，默认纸票版皮肤、可切换控制台版皮肤。只需一个进程。启动方式与数据模型见 [apps/tms/README.md](apps/tms/README.md)：
 
 ```bash
-# 主 API
-cd backend && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/uvicorn app.main:app --port 8000
-
-# 前端
-cd apps/tms && npm install && npm run dev   # http://localhost:3000
+cd apps/tms
+npm install
+npm run dev   # http://localhost:3000
 ```

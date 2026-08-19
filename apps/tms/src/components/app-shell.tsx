@@ -1,11 +1,11 @@
 "use client";
 
-/** 应用外壳：顶栏（品牌 / 皮肤切换 / 用户）+ 侧边菜单（按权限过滤）+ 会话守卫。 */
+/** 应用外壳：顶栏（品牌 / 皮肤切换 / 用户）+ 侧边菜单（按权限过滤）。会话由服务端布局注入。 */
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { api, getSkin, logout, setSkin, type Skin } from "@/lib/client";
+import { authClient, getSkin, setSkin, type Skin } from "@/lib/client";
 import type { Bootstrap } from "@/lib/types";
 
 const BootstrapContext = createContext<Bootstrap | null>(null);
@@ -18,7 +18,6 @@ export function useBootstrap(): Bootstrap {
 
 export function useCan(): (perm: string) => boolean {
   const { permissions } = useBootstrap();
-  // useCallback 保证函数引用稳定，避免依赖它的 effect 反复触发
   return useCallback((perm: string) => permissions.includes(perm), [permissions]);
 }
 
@@ -59,35 +58,24 @@ function SkinSwitch() {
   );
 }
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  initial,
+}: {
+  children: React.ReactNode;
+  initial: Bootstrap;
+}) {
   const router = useRouter();
   const pathname = usePathname();
-  const [boot, setBoot] = useState<Bootstrap | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    api<Bootstrap>("/api/bootstrap")
-      .then(setBoot)
-      .catch((err) => {
-        if (err.status === 401) router.replace("/login");
-        else setError(err.message);
-      });
-  }, [router]);
 
   const signOut = async () => {
-    await logout().catch(() => {});
+    await authClient.signOut();
     router.replace("/login");
+    router.refresh();
   };
 
-  if (error) {
-    return <div className="p-8 text-center text-destructive">{error}</div>;
-  }
-  if (!boot) {
-    return <div className="p-8 text-center text-muted-foreground">载入中…</div>;
-  }
-
   return (
-    <BootstrapContext.Provider value={boot}>
+    <BootstrapContext.Provider value={initial}>
       <div className="flex min-h-screen flex-col">
         <header className="sticky top-0 z-40 border-b bg-card/85 backdrop-blur">
           <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-2.5">
@@ -105,7 +93,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="ml-auto flex items-center gap-2.5">
               <SkinSwitch />
               <span className="hidden text-xs text-muted-foreground md:block">
-                {boot.user.name} · {boot.user.role_name}
+                {initial.user.name} · {initial.user.role_name}
               </span>
               <Button variant="outline" size="sm" onClick={signOut}>
                 退出
@@ -117,7 +105,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex w-full max-w-6xl flex-1 gap-6 px-4 py-6 max-md:flex-col">
           <nav aria-label="主菜单" className="w-44 flex-none max-md:w-full">
             <ul className="flex flex-col gap-1 max-md:flex-row max-md:overflow-x-auto">
-              {boot.menus.map((m) => {
+              {initial.menus.map((m) => {
                 const active = pathname === m.path || pathname.startsWith(m.path + "/");
                 return (
                   <li key={m.path}>
