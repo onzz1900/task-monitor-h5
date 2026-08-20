@@ -39,8 +39,7 @@ export function AppSidebar({
 
   const variant = isSynced ? sidebarVariant : props.variant;
   const collapsible = isSynced ? sidebarCollapsible : props.collapsible;
-  const items =
-    permissions?.includes("*") || !nav ? sidebarItems : hydrateSysMenuNav(nav);
+  const items = permissions?.includes("*") || !nav ? sidebarItems : hydrateSysMenuNav(nav);
 
   return (
     <Sidebar {...props} variant={variant} collapsible={collapsible}>

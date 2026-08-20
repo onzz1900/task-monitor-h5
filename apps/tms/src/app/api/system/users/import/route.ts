@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       const password = row[idx("password", 3)] ?? "";
       const phonenumber = row[idx("phonenumber", 4)] ?? "";
       if (!user_name || !email) continue;
-      if (await findSysUserByUserName(user_name) || await findSysUserByEmail(email)) continue;
+      if ((await findSysUserByUserName(user_name)) || (await findSysUserByEmail(email))) continue;
       if (password.length < 6) throw new ApiError(400, `密码至少 6 位：${user_name}`);
       const exists = await queryOne<{ id: string }>("SELECT id FROM `user` WHERE email = ?", [email]);
       if (!exists) {

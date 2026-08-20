@@ -2,7 +2,7 @@
  * Sidebar: admin (`*`) keeps the official template list.
  * Everyone else gets M/C rows from sys_menu + sys_role_menu (no URL_PERMS filter).
  */
-import { CheckSquare, Kanban, Lock, Menu, Users, type LucideIcon } from "lucide-react";
+import { CheckSquare, Kanban, Lock, type LucideIcon, Menu, Users } from "lucide-react";
 
 import { type NavGroup, sidebarItems } from "@/navigation/sidebar/sidebar-items";
 
@@ -25,7 +25,7 @@ const ICON_BY_URL: Record<string, LucideIcon> = {
 
 /** Map official C.path / component onto existing Next routes. */
 export function mapSysMenuToRoute(path: string, component?: string | null): string | null {
-  const p = String(path ?? "")
+  const p = String(path)
     .trim()
     .replace(/^\/+/, "")
     .toLowerCase();
@@ -119,7 +119,7 @@ export function buildSysMenuNav(args: {
     .sort((a, b) => {
       const pa = byId.get(a.id);
       const pb = byId.get(b.id);
-      return (Number(pa?.order_num ?? 99) - Number(pb?.order_num ?? 99)) || a.id - b.id;
+      return Number(pa?.order_num ?? 99) - Number(pb?.order_num ?? 99) || a.id - b.id;
     });
 }
 

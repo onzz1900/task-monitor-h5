@@ -77,7 +77,10 @@ function testNavMapping() {
 function cookieJar(res: Response, prev = ""): string {
   const raw = typeof res.headers.getSetCookie === "function" ? res.headers.getSetCookie() : [];
   const next = new Map<string, string>();
-  for (const part of prev.split(";").map((s) => s.trim()).filter(Boolean)) {
+  for (const part of prev
+    .split(";")
+    .map((s) => s.trim())
+    .filter(Boolean)) {
     const eq = part.indexOf("=");
     if (eq > 0) next.set(part.slice(0, eq), part);
   }
@@ -154,50 +157,99 @@ async function testApis() {
   const readonly = await signIn("readonly@tms.local", "read123");
   const stamp = Date.now();
 
-  await expectStatus("POST", "/api/system/users", null, 401, {
-    user_name: "x",
-    nick_name: "x",
-    email: "x@tms.local",
-    password: "secret1",
-  }, "user add no cookie");
-  await expectStatus("POST", "/api/system/users", duty, 403, {
-    user_name: `d${stamp}`,
-    nick_name: "duty-blocked",
-    email: `d${stamp}@tms.local`,
-    password: "secret1",
-  }, "duty user add");
-  await expectStatus("POST", "/api/system/users", readonly, 403, {
-    user_name: `r${stamp}`,
-    nick_name: "ro-blocked",
-    email: `r${stamp}@tms.local`,
-    password: "secret1",
-  }, "readonly user add");
+  await expectStatus(
+    "POST",
+    "/api/system/users",
+    null,
+    401,
+    {
+      user_name: "x",
+      nick_name: "x",
+      email: "x@tms.local",
+      password: "secret1",
+    },
+    "user add no cookie",
+  );
+  await expectStatus(
+    "POST",
+    "/api/system/users",
+    duty,
+    403,
+    {
+      user_name: `d${stamp}`,
+      nick_name: "duty-blocked",
+      email: `d${stamp}@tms.local`,
+      password: "secret1",
+    },
+    "duty user add",
+  );
+  await expectStatus(
+    "POST",
+    "/api/system/users",
+    readonly,
+    403,
+    {
+      user_name: `r${stamp}`,
+      nick_name: "ro-blocked",
+      email: `r${stamp}@tms.local`,
+      password: "secret1",
+    },
+    "readonly user add",
+  );
 
-  const createdUser = await expectStatus("POST", "/api/system/users", admin, 201, {
-    user_name: `u${stamp}`,
-    nick_name: "perm user",
-    email: `u${stamp}@tms.local`,
-    password: "secret1",
-    role_ids: [3],
-  }, "admin user add");
+  const createdUser = await expectStatus(
+    "POST",
+    "/api/system/users",
+    admin,
+    201,
+    {
+      user_name: `u${stamp}`,
+      nick_name: "perm user",
+      email: `u${stamp}@tms.local`,
+      password: "secret1",
+      role_ids: [3],
+    },
+    "admin user add",
+  );
   const userId = createdUser.json.user_id;
 
-  await expectStatus("PUT", `/api/system/users/${userId}`, duty, 403, {
-    user_name: `u${stamp}`,
-    nick_name: "nope",
-    email: `u${stamp}@tms.local`,
-  }, "duty user edit");
-  await expectStatus("PUT", `/api/system/users/${userId}`, admin, 200, {
-    user_name: `u${stamp}`,
-    nick_name: "perm user 2",
-    email: `u${stamp}@tms.local`,
-    role_ids: [3],
-  }, "admin user edit");
+  await expectStatus(
+    "PUT",
+    `/api/system/users/${userId}`,
+    duty,
+    403,
+    {
+      user_name: `u${stamp}`,
+      nick_name: "nope",
+      email: `u${stamp}@tms.local`,
+    },
+    "duty user edit",
+  );
+  await expectStatus(
+    "PUT",
+    `/api/system/users/${userId}`,
+    admin,
+    200,
+    {
+      user_name: `u${stamp}`,
+      nick_name: "perm user 2",
+      email: `u${stamp}@tms.local`,
+      role_ids: [3],
+    },
+    "admin user edit",
+  );
   await expectStatus("DELETE", `/api/system/users/${userId}`, duty, 403, undefined, "duty user remove");
   await expectStatus("DELETE", `/api/system/users/${userId}`, admin, 200, undefined, "admin user remove");
 
   await expectStatus("POST", "/api/system/roles", null, 401, { role_name: "x", role_key: "x" }, "role add no cookie");
-  await expectStatus("POST", "/api/system/roles", duty, 403, { role_name: "x", role_key: `d${stamp}` }, "duty role add");
+  await expectStatus(
+    "POST",
+    "/api/system/roles",
+    duty,
+    403,
+    { role_name: "x", role_key: `d${stamp}` },
+    "duty role add",
+  );
   const createdRole = await expectStatus(
     "POST",
     "/api/system/roles",
