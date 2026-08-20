@@ -1,6 +1,8 @@
 "use client";
+import Link from "next/link";
+
 import type { ReactTable, RowData } from "@tanstack/react-table";
-import { Settings2, X } from "lucide-react";
+import { Plus, Settings2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import type { DataTableFeatures } from "@/lib/data-table-features";
+import { useCan } from "@/lib/session-context";
 import { cn } from "@/lib/utils";
 
 import { TaskPriorityFilter } from "./task-priority-filter";
@@ -24,6 +27,7 @@ interface TasksToolbarProps<TData extends RowData> {
 }
 
 export function TasksToolbar<TData extends RowData>({ table }: TasksToolbarProps<TData>) {
+  const can = useCan();
   const isFiltered = table.state.columnFilters.length > 0;
   const searchValue = (table.getColumn("title")?.getFilterValue() as string | undefined) ?? "";
   const hideableColumns = table
@@ -58,7 +62,15 @@ export function TasksToolbar<TData extends RowData>({ table }: TasksToolbarProps
           </Button>
         )}
       </div>
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        {can("task:create") ? (
+          <Button size="sm" asChild>
+            <Link prefetch={false} href="/dashboard/tasks/new">
+              <Plus data-icon="inline-start" />
+              Add task
+            </Link>
+          </Button>
+        ) : null}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

@@ -23,7 +23,7 @@ export async function PUT(req: Request, ctx: Ctx) {
     await requirePermission("task:update");
     const { id } = await ctx.params;
     const task = await getTask(Number(id));
-    const t = normalizeInput(await req.json());
+    const t = await normalizeInput(await req.json());
     const nextRun = computeNextRun(t.schedule_kind!, t.cron_expr ?? null, t.interval_minutes ?? null);
     await execute(
       `UPDATE tasks SET
@@ -31,7 +31,8 @@ export async function PUT(req: Request, ctx: Ctx) {
          points_done = ?, points_total = ?, points_note = ?,
          schedule_kind = ?, cron_expr = ?, interval_minutes = ?, next_run_at = ?,
          callback_url = ?, callback_timeout_ms = ?, callback_retries = ?, callback_secret_ref = ?,
-         keep_runs = ?, status = ?, updated_at = ?
+         keep_runs = ?, status = ?, target_kind = ?, target_code = ?, multi_shop = ?, remark = ?,
+         updated_at = ?
        WHERE id = ?`,
       [
         t.title,
@@ -52,6 +53,10 @@ export async function PUT(req: Request, ctx: Ctx) {
         t.callback_secret_ref,
         t.keep_runs,
         t.status ?? (task.status as string),
+        t.target_kind,
+        t.target_code,
+        t.multi_shop ? 1 : 0,
+        t.remark,
         new Date().toISOString(),
         task.id,
       ],

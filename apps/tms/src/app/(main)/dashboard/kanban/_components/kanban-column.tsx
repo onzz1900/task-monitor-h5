@@ -16,9 +16,10 @@ interface KanbanColumnProps {
   column: Column;
   index: number;
   tasks: Task[];
+  onAddTask?: () => void;
 }
 
-export function KanbanColumn({ column, index, tasks }: KanbanColumnProps) {
+export function KanbanColumn({ column, index, tasks, onAddTask }: KanbanColumnProps) {
   const can = useCan();
   const columnSortable = useSortable({
     id: `column:${column.id}`,
@@ -65,7 +66,13 @@ export function KanbanColumn({ column, index, tasks }: KanbanColumnProps) {
         </div>
         <div className="-mr-2 flex items-center gap-0.5 text-muted-foreground">
           {can("task:create") ? (
-            <Button variant="ghost" size="icon-sm" aria-label={`Add task to ${column.title}`}>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={`Add task to ${column.title}`}
+              type="button"
+              onClick={onAddTask}
+            >
               <Plus />
             </Button>
           ) : null}

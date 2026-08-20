@@ -73,7 +73,9 @@ npm run dev
 
 每次请求从库重读 `sys_user_role` / `sys_role_menu` / `sys_user.status`（布局 `force-dynamic`）。非超管侧栏从 `sys_menu` 树构建：`menu_type` M 为分组、C 为子项（`visible=0` `status=0`，且在当前角色 `sys_role_menu` 中、具备该 C 的 `perms`）。C.path / component 映射到现有路由（`user`→`/dashboard/users`，`role`→`/dashboard/roles`，`menu`→`/dashboard/menus`，任务列表→`/dashboard/tasks`）；有 `task:read` 时同组保留 `/dashboard/kanban`。缺 C 权限的项不进侧栏；硬打 URL 仍 `/unauthorized`。超管保持官方 `sidebarItems` 全量。模板演示页（CRM、财务等）仅超管可见。按钮级 F 隐藏：`system:user:{add,edit,remove,export,import}`、`system:role:{add,edit,remove,export}`、`system:menu:{add,edit,remove}`、看板 Add task / Import CSV 需 `task:create`。写/删/导入/导出 Route Handler 一律 `requirePermission`（401 / 403）。直打 `/dashboard/users|roles|menus` 缺 `system:*:list` 会到 `/unauthorized`。未登录访问 `/dashboard/*` 回 Login v1。`sys_user.status=1`（停用）下一请求起 API/页不可用。登出走 Better Auth `signOut`。
 
-`/dashboard/kanban` 用官方模板看板壳，卡片来自同一张 `tasks` 表。展示：待流转→planned，运行中→building，已阻塞→qa，本轮已完成→shipped，未知状态只出现在 ideas。拖列只写 `meta.ts` 的四个中文状态（ideas/planned 都写 待流转，building→运行中，qa→已阻塞，shipped→本轮已完成），从不把英文列名写入 MySQL。失败则回弹。`/dashboard/tasks` 表格仍在。
+`/dashboard/kanban` 用官方模板看板壳，卡片来自同一张 `tasks` 表。展示：待流转→planned，运行中→building，已阻塞→qa，本轮已完成→shipped，未知状态只出现在 ideas。拖列只写 `meta.ts` 的四个中文状态（ideas/planned 都写 待流转，building→运行中，qa→已阻塞，shipped→本轮已完成），从不把英文列名写入 MySQL。失败则回弹。`/dashboard/tasks` 表格仍在。列表「Add task」进 `/dashboard/tasks/new`（需 `task:create`）；看板 Add task / 列上 + 打开同一张 `TaskForm`，`POST /api/tasks` 落库。
+
+登记 / 修改表单的船长 8 项：名称、描述、类型（平台 / 业务系统 / 其他）、级联目标、是否多店铺、cron 调度、状态、备注。平台与业务系统选项在 `task_lookups`（`db:setup` / `ensureReady` 会给已有库加列并种子）。`tasks.type` 仍是评价采集等种类，`mockRunResult` 不改。新列：`target_kind` / `target_code` / `multi_shop` / `remark`。
 
 ## 保留的模板 chrome 文件（未重画）
 

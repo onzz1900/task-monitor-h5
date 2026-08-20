@@ -25,8 +25,10 @@ import {
   Upload,
 } from "lucide-react";
 
+import { TaskForm } from "@/components/task-form";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -75,9 +77,22 @@ function isTaskDragData(value: unknown): value is TaskDragData {
 export function Kanban({ initialBoard }: KanbanProps) {
   const can = useCan();
   const [board, setBoard] = React.useState<BoardState>(initialBoard);
+  const [formOpen, setFormOpen] = React.useState(false);
+  const [formStatus, setFormStatus] = React.useState("待流转");
   const [columnOrder, setColumnOrder] = React.useState<ColumnId[]>(columnIds);
   const boardBeforeDrag = React.useRef<BoardState>(initialBoard);
   const orderedColumns = columnOrder.flatMap((columnId) => columns.find((column) => column.id === columnId) ?? []);
+
+  function openCreate(status = "待流转") {
+    setFormStatus(status);
+    setFormOpen(true);
+  }
+
+  async function refreshBoard() {
+    const list = await fetch("/api/tasks");
+    if (!list.ok) return;
+    setBoard(toKanbanBoard((await list.json()) as DomainTask[]));
+  }
 
   function handleDragStart(event: DragStartEvent) {
     const { source } = event.operation;
@@ -180,7 +195,7 @@ export function Kanban({ initialBoard }: KanbanProps) {
           </Button>
           {can("task:create") ? (
             <ButtonGroup className="w-full sm:w-fit">
-              <Button className="flex-1 sm:flex-none">
+              <Button className="flex-1 sm:flex-none" type="button" onClick={() => openCreate()}>
                 <Plus data-icon="inline-start" />
                 Add task
               </Button>
@@ -215,7 +230,13 @@ export function Kanban({ initialBoard }: KanbanProps) {
         <div className="scrollbar-thin min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-hidden bg-muted/25 px-4 pt-4 pb-0 [scrollbar-color:var(--border)_transparent] lg:px-5 lg:pt-5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:h-1">
           <div className="inline-grid h-full min-w-full grid-cols-[repeat(5,minmax(20rem,1fr))] gap-4">
             {orderedColumns.map((column, index) => (
-              <KanbanColumn key={column.id} column={column} index={index} tasks={board[column.id]} />
+              <KanbanColumn
+                key={column.id}
+                column={column}
+                index={index}
+                tasks={board[column.id]}
+                onAddTask={() => openCreate(COLUMN_TO_STATUS[column.id])}
+              />
             ))}
           </div>
         </div>
@@ -231,6 +252,25 @@ export function Kanban({ initialBoard }: KanbanProps) {
           }}
         </DragOverlay>
       </DragDropProvider>
+
+      <Dialog open={formOpen} onOpenChange={setFormOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>登记任务</DialogTitle>
+            <DialogDescription>与任务列表共用同一张表单，保存写入 MySQL。</DialogDescription>
+          </DialogHeader>
+          {formOpen ? (
+            <TaskForm
+              defaultStatus={formStatus}
+              onSaved={() => {
+                setFormOpen(false);
+                void refreshBoard();
+              }}
+              onCancel={() => setFormOpen(false)}
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

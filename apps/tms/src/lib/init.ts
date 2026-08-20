@@ -8,6 +8,7 @@ import { auth } from "./auth";
 import { asCount, createDomainTables, execute, queryOne, waitForMysql } from "./db";
 import { ensureOfficialFButtons, seedRuoyi } from "./ruoyi-seed";
 import { computeNextRun } from "./schedule";
+import { ensureTaskCaptainSchema } from "./task-lookups";
 
 const PERMISSIONS: [string, string][] = [
   ["task:read", "查看任务"],
@@ -236,6 +237,7 @@ export function ensureReady(): Promise<void> {
       await seedRuoyi();
     }
     await ensureOfficialFButtons();
+    await ensureTaskCaptainSchema();
   })().catch((err) => {
     readyPromise = null; // 失败不缓存，允许下次请求重试
     throw err;

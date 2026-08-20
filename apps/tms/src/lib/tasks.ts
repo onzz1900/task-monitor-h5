@@ -3,6 +3,7 @@ import { asCount, execute, query, queryOne, sqlLimit } from "./db";
 import { SECRET_REFS, STATUSES, TASK_TYPES } from "./meta";
 import { ApiError } from "./rbac";
 import { computeNextRun, isValidCron } from "./schedule";
+import { isTargetKind, listLookups } from "./task-lookups";
 
 export type TaskInput = {
   title: string;
@@ -22,6 +23,10 @@ export type TaskInput = {
   callback_secret_ref?: string | null;
   keep_runs?: number;
   status?: string;
+  target_kind?: string;
+  target_code?: string;
+  multi_shop?: boolean | number | string;
+  remark?: string;
 };
 
 export type TaskRow = Record<string, unknown> & { id: number };
@@ -31,11 +36,23 @@ function num(v: unknown, fallback: number): number {
   return Number.isFinite(n) ? Math.round(n) : fallback;
 }
 
-export function normalizeInput(body: TaskInput): TaskInput {
+export async function normalizeInput(body: TaskInput): Promise<TaskInput> {
+  const targetKind = String(body.target_kind ?? "other").trim();
+  if (!isTargetKind(targetKind)) throw new ApiError(400, "类型必须是平台、业务系统或其他");
+  const targetCode = String(body.target_code ?? "").trim();
+  const type = String(body.type ?? "review");
+  if (!(type in TASK_TYPES)) throw new ApiError(400, "任务类型无效");
+  if (targetKind === "platform" || targetKind === "business") {
+    const options = await listLookups(targetKind);
+    if (!targetCode || !options.some((row) => row.code === targetCode)) {
+      throw new ApiError(400, targetKind === "platform" ? "请选择平台" : "请选择业务系统");
+    }
+  }
+  const multiShop = body.multi_shop === true || body.multi_shop === 1 || body.multi_shop === "1";
   const t: TaskInput = {
     title: String(body.title ?? "").trim(),
     description: String(body.description ?? ""),
-    type: String(body.type ?? "review"),
+    type,
     owner_name: String(body.owner_name ?? ""),
     channel: String(body.channel ?? ""),
     points_done: num(body.points_done, 0),
@@ -49,11 +66,14 @@ export function normalizeInput(body: TaskInput): TaskInput {
     callback_retries: num(body.callback_retries, 3),
     callback_secret_ref: body.callback_secret_ref ? String(body.callback_secret_ref) : null,
     keep_runs: num(body.keep_runs, 10),
-    status: body.status ? String(body.status) : undefined,
+    status: String(body.status ?? "待流转"),
+    target_kind: targetKind,
+    target_code: targetKind === "other" ? "" : targetCode,
+    multi_shop: multiShop,
+    remark: String(body.remark ?? ""),
   };
 
   if (!t.title) throw new ApiError(400, "请填写任务名称");
-  if (!(t.type! in TASK_TYPES)) throw new ApiError(400, "任务类型无效");
   if (t.schedule_kind === "cron") {
     if (!t.cron_expr || !isValidCron(t.cron_expr)) throw new ApiError(400, "cron 表达式无效");
   } else if (t.schedule_kind === "interval") {
@@ -76,7 +96,7 @@ export function normalizeInput(body: TaskInput): TaskInput {
   if (t.points_done! < 0 || t.points_done! > t.points_total!) {
     throw new ApiError(400, "已完成点位需在 0 与总点位之间");
   }
-  if (t.status && !STATUSES.includes(t.status as (typeof STATUSES)[number])) {
+  if (!t.status || !STATUSES.includes(t.status as (typeof STATUSES)[number])) {
     throw new ApiError(400, "状态无效");
   }
   return t;
@@ -91,6 +111,10 @@ export async function serializeTask(row: TaskRow, withRuns = false) {
   const toRun = (r: Record<string, unknown>) => ({ ...r, ok: Boolean(r.ok) });
   return {
     ...row,
+    target_kind: String(row.target_kind ?? "other"),
+    target_code: String(row.target_code ?? ""),
+    multi_shop: Boolean(Number(row.multi_shop ?? 0)),
+    remark: String(row.remark ?? ""),
     last_run: runs.length ? toRun(runs[0]) : null,
     ...(withRuns ? { runs: runs.map(toRun) } : {}),
   };

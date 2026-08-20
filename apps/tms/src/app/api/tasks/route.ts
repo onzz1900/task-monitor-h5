@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { execute, query, queryOne } from "@/lib/db";
 import { handleApiError, requirePermission } from "@/lib/rbac";
 import { computeNextRun } from "@/lib/schedule";
@@ -17,22 +18,24 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     await requirePermission("task:create");
-    const t = normalizeInput(await req.json());
+    const t = await normalizeInput(await req.json());
     const now = new Date().toISOString();
     const nextRun = computeNextRun(t.schedule_kind!, t.cron_expr ?? null, t.interval_minutes ?? null);
     const info = await execute(
       `INSERT INTO tasks (
-         code, title, description, type, owner_name, channel,
+         code, title, description, type, status, owner_name, channel,
          points_done, points_total, points_note,
          schedule_kind, cron_expr, interval_minutes, next_run_at,
          callback_url, callback_timeout_ms, callback_retries, callback_secret_ref,
-         keep_runs, created_at, updated_at
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         keep_runs, target_kind, target_code, multi_shop, remark,
+         created_at, updated_at
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         await nextTaskCode(),
         t.title,
         t.description,
         t.type,
+        t.status,
         t.owner_name,
         t.channel,
         t.points_done,
@@ -47,6 +50,10 @@ export async function POST(req: Request) {
         t.callback_retries,
         t.callback_secret_ref,
         t.keep_runs,
+        t.target_kind,
+        t.target_code,
+        t.multi_shop ? 1 : 0,
+        t.remark,
         now,
         now,
       ],

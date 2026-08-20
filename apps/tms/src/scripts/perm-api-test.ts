@@ -328,6 +328,50 @@ async function testApis() {
     { ...taskBody, title: "perm-test-task-2" },
     "duty task update",
   );
+
+  await expectStatus(
+    "POST",
+    "/api/tasks",
+    duty,
+    400,
+    { ...taskBody, title: "bad-cascade", target_kind: "platform", target_code: "oms" },
+    "platform + business code",
+  );
+  await expectStatus(
+    "POST",
+    "/api/tasks",
+    duty,
+    400,
+    { ...taskBody, title: "no-target", target_kind: "platform" },
+    "platform missing target",
+  );
+  const captain = await expectStatus(
+    "POST",
+    "/api/tasks",
+    duty,
+    201,
+    {
+      title: `captain-${stamp}`,
+      description: "级联落库",
+      type: "review",
+      target_kind: "platform",
+      target_code: "taobao",
+      multi_shop: true,
+      remark: "备注写入",
+      status: "运行中",
+      schedule_kind: "cron",
+      cron_expr: "0 9 * * *",
+    },
+    "captain fields create",
+  );
+  assert(captain.json.target_kind === "platform", "target_kind persisted");
+  assert(captain.json.target_code === "taobao", "target_code persisted");
+  assert(captain.json.multi_shop === true, "multi_shop persisted");
+  assert(captain.json.remark === "备注写入", "remark persisted");
+  assert(captain.json.status === "运行中", "status persisted on create");
+  const fetched = await call("GET", `/api/tasks/${captain.json.id}`, duty);
+  assert(fetched.status === 200 && fetched.json.remark === "备注写入", "GET returns captain fields");
+  console.log("ok  captain fields persisted");
 }
 
 async function main() {

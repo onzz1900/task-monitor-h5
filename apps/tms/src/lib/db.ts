@@ -139,6 +139,10 @@ export async function createDomainTables(): Promise<void> {
       callback_retries INT NOT NULL DEFAULT 3,
       callback_secret_ref VARCHAR(128) NULL,
       keep_runs INT NOT NULL DEFAULT 10,
+      target_kind VARCHAR(32) NOT NULL DEFAULT 'other',
+      target_code VARCHAR(64) NOT NULL DEFAULT '',
+      multi_shop TINYINT NOT NULL DEFAULT 0,
+      remark VARCHAR(1024) NOT NULL DEFAULT '',
       created_at VARCHAR(64) NOT NULL,
       updated_at VARCHAR(64) NOT NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -38,6 +38,10 @@ export type Task = {
   callback_retries: number;
   callback_secret_ref: string | null;
   keep_runs: number;
+  target_kind: "platform" | "business" | "other";
+  target_code: string;
+  multi_shop: boolean;
+  remark: string;
   created_at: string;
   updated_at: string;
   last_run: Run | null;
@@ -48,6 +52,9 @@ export type Meta = {
   task_types: Record<string, string>;
   statuses: string[];
   secret_refs: { ref: string; description: string }[];
+  target_kinds: Record<string, string>;
+  platforms: { kind: string; code: string; label: string; sort: number }[];
+  business_systems: { kind: string; code: string; label: string; sort: number }[];
 };
 
 export const STATUS_STYLE: Record<string, string> = {
