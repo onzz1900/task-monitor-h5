@@ -121,6 +121,18 @@ export async function menuIdsForRole(roleId: number): Promise<number[]> {
   return rows.map((r) => nid(r.menu_id));
 }
 
+export async function menuIdsForUser(userId: number): Promise<number[]> {
+  const rows = await query<{ menu_id: number }>(
+    `SELECT DISTINCT rm.menu_id
+     FROM sys_user_role ur
+     JOIN sys_role r ON r.role_id = ur.role_id AND r.del_flag = '0' AND r.status = '0'
+     JOIN sys_role_menu rm ON rm.role_id = ur.role_id
+     WHERE ur.user_id = ?`,
+    [userId],
+  );
+  return rows.map((r) => nid(r.menu_id));
+}
+
 export async function replaceRoleMenus(roleId: number, menuIds: number[]): Promise<void> {
   await execute("DELETE FROM sys_role_menu WHERE role_id = ?", [roleId]);
   for (const menuId of menuIds) {

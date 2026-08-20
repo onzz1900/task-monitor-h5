@@ -186,6 +186,24 @@ export async function seedRuoyi(): Promise<void> {
     perms: "system:user:remove",
   });
   await insertMenu({
+    menu_id: 1004,
+    menu_name: "用户导出",
+    parent_id: 100,
+    order_num: 5,
+    path: "",
+    menu_type: "F",
+    perms: "system:user:export",
+  });
+  await insertMenu({
+    menu_id: 1005,
+    menu_name: "用户导入",
+    parent_id: 100,
+    order_num: 6,
+    path: "",
+    menu_type: "F",
+    perms: "system:user:import",
+  });
+  await insertMenu({
     menu_id: 1007,
     menu_name: "角色查询",
     parent_id: 101,
@@ -220,6 +238,15 @@ export async function seedRuoyi(): Promise<void> {
     path: "",
     menu_type: "F",
     perms: "system:role:remove",
+  });
+  await insertMenu({
+    menu_id: 1011,
+    menu_name: "角色导出",
+    parent_id: 101,
+    order_num: 5,
+    path: "",
+    menu_type: "F",
+    perms: "system:role:export",
   });
   await insertMenu({
     menu_id: 1012,
@@ -318,8 +345,8 @@ export async function seedRuoyi(): Promise<void> {
   });
 
   const allMenus = [
-    1, 100, 101, 102, 1000, 1001, 1002, 1003, 1007, 1008, 1009, 1010, 1012, 1013, 1014, 1015, 2, 200, 2000, 2001, 2002,
-    2003,
+    1, 100, 101, 102, 1000, 1001, 1002, 1003, 1004, 1005, 1007, 1008, 1009, 1010, 1011, 1012, 1013, 1014, 1015, 2, 200,
+    2000, 2001, 2002, 2003,
   ];
   for (const menuId of allMenus) {
     await execute("INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, ?)", [menuId]);
@@ -364,4 +391,33 @@ export async function seedRuoyi(): Promise<void> {
   await execute("INSERT IGNORE INTO sys_user_role (user_id, role_id) VALUES (?, 1)", [zhou]);
   await execute("INSERT IGNORE INTO sys_user_role (user_id, role_id) VALUES (?, 2)", [han]);
   await execute("INSERT IGNORE INTO sys_user_role (user_id, role_id) VALUES (?, 3)", [su]);
+}
+
+/** Official F buttons from ry_20260417.sql — idempotent for already-seeded DBs. */
+const OFFICIAL_F = [
+  { menu_id: 1004, menu_name: "用户导出", parent_id: 100, order_num: 5, perms: "system:user:export" },
+  { menu_id: 1005, menu_name: "用户导入", parent_id: 100, order_num: 6, perms: "system:user:import" },
+  { menu_id: 1011, menu_name: "角色导出", parent_id: 101, order_num: 5, perms: "system:role:export" },
+] as const;
+
+export async function ensureOfficialFButtons(): Promise<void> {
+  for (const row of OFFICIAL_F) {
+    const existing = await queryOne<{ menu_id: number }>(
+      "SELECT menu_id FROM sys_menu WHERE menu_id = ? OR perms = ?",
+      [row.menu_id, row.perms],
+    );
+    if (!existing) {
+      await insertMenu({
+        menu_id: row.menu_id,
+        menu_name: row.menu_name,
+        parent_id: row.parent_id,
+        order_num: row.order_num,
+        path: "",
+        menu_type: "F",
+        perms: row.perms,
+      });
+    }
+    const menuId = existing ? Number(existing.menu_id) : row.menu_id;
+    await execute("INSERT IGNORE INTO sys_role_menu (role_id, menu_id) VALUES (1, ?)", [menuId]);
+  }
 }

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { Plus } from "lucide-react";
+import { Download, Plus, Upload } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -65,6 +65,7 @@ export function RuoyiUsers({ users, depts, roles }: { users: RuoyiUser[]; depts:
   const [form, setForm] = React.useState(emptyForm);
   const [error, setError] = React.useState("");
   const [saving, setSaving] = React.useState(false);
+  const importRef = React.useRef<HTMLInputElement>(null);
 
   function openCreate() {
     setEditing(null);
@@ -126,6 +127,46 @@ export function RuoyiUsers({ users, depts, roles }: { users: RuoyiUser[]; depts:
     }
   }
 
+  async function removeUser(user: RuoyiUser) {
+    if (!window.confirm(`删除用户 ${user.user_name}？`)) return;
+    const res = await fetch(`/api/system/users/${user.user_id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json();
+      window.alert(data.detail ?? "删除失败");
+      return;
+    }
+    setRows((prev) => prev.filter((row) => row.user_id !== user.user_id));
+  }
+
+  async function exportUsers() {
+    const res = await fetch("/api/system/users/export");
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      window.alert((data as { detail?: string }).detail ?? "导出失败");
+      return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "sys_user.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function importUsers(file: File) {
+    const body = new FormData();
+    body.append("file", file);
+    const res = await fetch("/api/system/users/import", { method: "POST", body });
+    const data = await res.json();
+    if (!res.ok) {
+      window.alert(data.detail ?? "导入失败");
+      return;
+    }
+    const list = await fetch("/api/system/users");
+    if (list.ok) setRows(await list.json());
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -133,12 +174,39 @@ export function RuoyiUsers({ users, depts, roles }: { users: RuoyiUser[]; depts:
         <CardDescription>
           字段对齐若依 sys_user：用户名、昵称、邮箱、手机、性别、状态、部门、角色、备注、创建时间。
         </CardDescription>
-        {can("system:user:add") ? (
-          <CardAction>
-            <Button size="sm" onClick={openCreate}>
-              <Plus />
-              新增
-            </Button>
+        {can("system:user:add") || can("system:user:import") || can("system:user:export") ? (
+          <CardAction className="flex flex-wrap gap-2">
+            {can("system:user:add") ? (
+              <Button size="sm" onClick={openCreate}>
+                <Plus />
+                新增
+              </Button>
+            ) : null}
+            {can("system:user:import") ? (
+              <>
+                <input
+                  ref={importRef}
+                  type="file"
+                  accept=".csv,text/csv"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) void importUsers(file);
+                    e.target.value = "";
+                  }}
+                />
+                <Button size="sm" variant="outline" onClick={() => importRef.current?.click()}>
+                  <Upload />
+                  导入
+                </Button>
+              </>
+            ) : null}
+            {can("system:user:export") ? (
+              <Button size="sm" variant="outline" onClick={() => void exportUsers()}>
+                <Download />
+                导出
+              </Button>
+            ) : null}
           </CardAction>
         ) : null}
       </CardHeader>
@@ -180,6 +248,11 @@ export function RuoyiUsers({ users, depts, roles }: { users: RuoyiUser[]; depts:
                   {can("system:user:edit") ? (
                     <Button variant="ghost" size="sm" onClick={() => openEdit(user)}>
                       修改
+                    </Button>
+                  ) : null}
+                  {can("system:user:remove") ? (
+                    <Button variant="ghost" size="sm" onClick={() => void removeUser(user)}>
+                      删除
                     </Button>
                   ) : null}
                 </TableCell>
@@ -327,9 +400,11 @@ export function RuoyiUsers({ users, depts, roles }: { users: RuoyiUser[]; depts:
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 取消
               </Button>
-              <Button type="submit" disabled={saving}>
-                保存
-              </Button>
+              {can(editing ? "system:user:edit" : "system:user:add") ? (
+                <Button type="submit" disabled={saving}>
+                  保存
+                </Button>
+              ) : null}
             </DialogFooter>
           </form>
         </DialogContent>

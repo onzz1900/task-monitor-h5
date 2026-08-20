@@ -41,7 +41,7 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant={variant} collapsible={collapsible} permissions={boot.permissions} />
+      <AppSidebar variant={variant} collapsible={collapsible} permissions={boot.permissions} nav={boot.nav} />
       <SidebarInset
         className={cn(
           "[html[data-content-layout=centered]_&>*]:mx-auto",

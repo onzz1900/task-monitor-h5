@@ -50,7 +50,7 @@ npm run dev
 | 值班 | `duty@tms.local` | `duty123` |
 | 只读 | `readonly@tms.local` | `read123` |
 
-登录后业务页：`/dashboard/tasks`、`/dashboard/users`、`/dashboard/roles`、`/dashboard/menus`。侧栏 / 顶栏 / 主题仍是模板自带导航（与官方 demo 同一套）。
+登录后业务页：`/dashboard/tasks`、`/dashboard/users`、`/dashboard/roles`、`/dashboard/menus`。侧栏 / 顶栏 / 主题仍是模板自带导航（与官方 demo 同一套）。非超管侧栏改为按 `sys_menu`（M 目录 / C 菜单）+ `sys_role_menu` 动态组装，不再用 URL 白名单裁官方列表；超管 `perms=["*"]` 仍看完整模板导航（CRM 等仅超管）。按钮（新增 / 修改 / 删除 / 保存 / 导入 / 导出）缺对应 F 则不渲染。`npm run test:perms` 覆盖写接口 200/201、缺权 403、无 cookie 401。
 
 ## 若依 RBAC（对照官方 SQL）
 
@@ -71,7 +71,7 @@ npm run dev
 
 登录仍走 Better Auth（`user` / `session` 等表）。`sys_*` 是 RBAC 真源：按邮箱对齐 `sys_user`，`role_key = admin` 为超级管理员（`perms=["*"]`，菜单树勾选不能关掉超管）。`sys_user.password` 保持官方列，哈希不写在该列（由 Better Auth 保管）。
 
-每次请求从库重读 `sys_user_role` / `sys_role_menu` / `sys_user.status`（布局 `force-dynamic`）。非超管侧栏只保留其有权的业务项（任务 / 看板 / 用户 / 角色 / 菜单），模板演示页（CRM、财务等）仍给超管看、对值班/只读隐藏。直打 `/dashboard/users|roles|menus` 缺 `system:*:list` 会到 `/unauthorized`。未登录访问 `/dashboard/*` 回 Login v1。`sys_user.status=1`（停用）下一请求起 API/页不可用。登出走 Better Auth `signOut`。
+每次请求从库重读 `sys_user_role` / `sys_role_menu` / `sys_user.status`（布局 `force-dynamic`）。非超管侧栏从 `sys_menu` 树构建：`menu_type` M 为分组、C 为子项（`visible=0` `status=0`，且在当前角色 `sys_role_menu` 中、具备该 C 的 `perms`）。C.path / component 映射到现有路由（`user`→`/dashboard/users`，`role`→`/dashboard/roles`，`menu`→`/dashboard/menus`，任务列表→`/dashboard/tasks`）；有 `task:read` 时同组保留 `/dashboard/kanban`。缺 C 权限的项不进侧栏；硬打 URL 仍 `/unauthorized`。超管保持官方 `sidebarItems` 全量。模板演示页（CRM、财务等）仅超管可见。按钮级 F 隐藏：`system:user:{add,edit,remove,export,import}`、`system:role:{add,edit,remove,export}`、`system:menu:{add,edit,remove}`、看板 Add task / Import CSV 需 `task:create`。写/删/导入/导出 Route Handler 一律 `requirePermission`（401 / 403）。直打 `/dashboard/users|roles|menus` 缺 `system:*:list` 会到 `/unauthorized`。未登录访问 `/dashboard/*` 回 Login v1。`sys_user.status=1`（停用）下一请求起 API/页不可用。登出走 Better Auth `signOut`。
 
 `/dashboard/kanban` 用官方模板看板壳，卡片来自同一张 `tasks` 表。展示：待流转→planned，运行中→building，已阻塞→qa，本轮已完成→shipped，未知状态只出现在 ideas。拖列只写 `meta.ts` 的四个中文状态（ideas/planned 都写 待流转，building→运行中，qa→已阻塞，shipped→本轮已完成），从不把英文列名写入 MySQL。失败则回弹。`/dashboard/tasks` 表格仍在。
 

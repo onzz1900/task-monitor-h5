@@ -4,7 +4,7 @@ import * as React from "react";
 
 import Link from "next/link";
 
-import { Plus } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 
 import { MenuPermTree, type MenuTreeItem } from "@/app/(main)/dashboard/_components/ruoyi/menu-perm-tree";
 import { Badge } from "@/components/ui/badge";
@@ -122,6 +122,33 @@ export function RuoyiRoles({ roles, menuTree }: { roles: RuoyiRole[]; menuTree: 
     setAuthOpen(false);
   }
 
+  async function removeRole(role: RuoyiRole) {
+    if (!window.confirm(`删除角色 ${role.role_name}？`)) return;
+    const res = await fetch(`/api/system/roles/${role.role_id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json();
+      window.alert(data.detail ?? "删除失败");
+      return;
+    }
+    setRows((prev) => prev.filter((row) => row.role_id !== role.role_id));
+  }
+
+  async function exportRoles() {
+    const res = await fetch("/api/system/roles/export");
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      window.alert((data as { detail?: string }).detail ?? "导出失败");
+      return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "sys_role.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -137,12 +164,20 @@ export function RuoyiRoles({ roles, menuTree }: { roles: RuoyiRole[]; menuTree: 
             </>
           ) : null}
         </CardDescription>
-        {can("system:role:add") ? (
-          <CardAction>
-            <Button size="sm" onClick={openCreate}>
-              <Plus />
-              新增
-            </Button>
+        {can("system:role:add") || can("system:role:export") ? (
+          <CardAction className="flex flex-wrap gap-2">
+            {can("system:role:add") ? (
+              <Button size="sm" onClick={openCreate}>
+                <Plus />
+                新增
+              </Button>
+            ) : null}
+            {can("system:role:export") ? (
+              <Button size="sm" variant="outline" onClick={() => void exportRoles()}>
+                <Download />
+                导出
+              </Button>
+            ) : null}
           </CardAction>
         ) : null}
       </CardHeader>
@@ -180,6 +215,11 @@ export function RuoyiRoles({ roles, menuTree }: { roles: RuoyiRole[]; menuTree: 
                         菜单权限
                       </Button>
                     </>
+                  ) : null}
+                  {can("system:role:remove") ? (
+                    <Button variant="ghost" size="sm" onClick={() => void removeRole(role)}>
+                      删除
+                    </Button>
                   ) : null}
                 </TableCell>
               </TableRow>
@@ -245,9 +285,11 @@ export function RuoyiRoles({ roles, menuTree }: { roles: RuoyiRole[]; menuTree: 
               <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>
                 取消
               </Button>
-              <Button type="submit" disabled={saving}>
-                保存
-              </Button>
+              {can(current ? "system:role:edit" : "system:role:add") ? (
+                <Button type="submit" disabled={saving}>
+                  保存
+                </Button>
+              ) : null}
             </DialogFooter>
           </form>
         </DialogContent>
@@ -265,9 +307,11 @@ export function RuoyiRoles({ roles, menuTree }: { roles: RuoyiRole[]; menuTree: 
             <Button type="button" variant="outline" onClick={() => setAuthOpen(false)}>
               取消
             </Button>
-            <Button type="button" disabled={saving} onClick={saveAuth}>
-              保存
-            </Button>
+            {can("system:role:edit") ? (
+              <Button type="button" disabled={saving} onClick={saveAuth}>
+                保存
+              </Button>
+            ) : null}
           </DialogFooter>
         </DialogContent>
       </Dialog>

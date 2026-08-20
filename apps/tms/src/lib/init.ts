@@ -6,7 +6,7 @@ import { getMigrations } from "better-auth/db/migration";
 
 import { auth } from "./auth";
 import { asCount, createDomainTables, execute, queryOne, waitForMysql } from "./db";
-import { seedRuoyi } from "./ruoyi-seed";
+import { ensureOfficialFButtons, seedRuoyi } from "./ruoyi-seed";
 import { computeNextRun } from "./schedule";
 
 const PERMISSIONS: [string, string][] = [
@@ -235,6 +235,7 @@ export function ensureReady(): Promise<void> {
     if (asCount(ruoyi?.n) === 0) {
       await seedRuoyi();
     }
+    await ensureOfficialFButtons();
   })().catch((err) => {
     readyPromise = null; // 失败不缓存，允许下次请求重试
     throw err;

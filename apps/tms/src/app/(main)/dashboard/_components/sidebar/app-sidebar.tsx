@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_CONFIG } from "@/config/app-config";
 import { rootUser } from "@/data/users";
-import { filterSidebarItems } from "@/lib/sidebar-filter";
+import { hydrateSysMenuNav, type SidebarNavDto } from "@/lib/sidebar-filter";
 import { sidebarItems } from "@/navigation/sidebar/sidebar-items";
 import { usePreferencesStore } from "@/stores/preferences/preferences-provider";
 
@@ -26,8 +26,9 @@ import { SupportCard } from "./support-card";
 
 export function AppSidebar({
   permissions,
+  nav,
   ...props
-}: React.ComponentProps<typeof Sidebar> & { permissions?: string[] }) {
+}: React.ComponentProps<typeof Sidebar> & { permissions?: string[]; nav?: SidebarNavDto[] }) {
   const { sidebarVariant, sidebarCollapsible, isSynced } = usePreferencesStore(
     useShallow((s) => ({
       sidebarVariant: s.values.sidebar_variant,
@@ -38,7 +39,8 @@ export function AppSidebar({
 
   const variant = isSynced ? sidebarVariant : props.variant;
   const collapsible = isSynced ? sidebarCollapsible : props.collapsible;
-  const items = permissions ? filterSidebarItems(permissions) : sidebarItems;
+  const items =
+    permissions?.includes("*") || !nav ? sidebarItems : hydrateSysMenuNav(nav);
 
   return (
     <Sidebar {...props} variant={variant} collapsible={collapsible}>

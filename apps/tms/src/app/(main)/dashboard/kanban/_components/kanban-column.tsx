@@ -6,6 +6,7 @@ import { useSortable } from "@dnd-kit/react/sortable";
 import { GripVertical, MoreVertical, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useCan } from "@/lib/session-context";
 import { cn } from "@/lib/utils";
 
 import { SortableTaskCard } from "./sortable-task-card";
@@ -18,6 +19,7 @@ interface KanbanColumnProps {
 }
 
 export function KanbanColumn({ column, index, tasks }: KanbanColumnProps) {
+  const can = useCan();
   const columnSortable = useSortable({
     id: `column:${column.id}`,
     index,
@@ -62,9 +64,11 @@ export function KanbanColumn({ column, index, tasks }: KanbanColumnProps) {
           </p>
         </div>
         <div className="-mr-2 flex items-center gap-0.5 text-muted-foreground">
-          <Button variant="ghost" size="icon-sm" aria-label={`Add task to ${column.title}`}>
-            <Plus />
-          </Button>
+          {can("task:create") ? (
+            <Button variant="ghost" size="icon-sm" aria-label={`Add task to ${column.title}`}>
+              <Plus />
+            </Button>
+          ) : null}
           <Button variant="ghost" size="icon-sm" aria-label={`${column.title} column actions`}>
             <MoreVertical />
           </Button>

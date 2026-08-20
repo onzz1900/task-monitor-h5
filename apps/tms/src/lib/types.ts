@@ -4,6 +4,7 @@ export type Bootstrap = {
   user: { id: string; email: string; name: string; role: string; role_name: string; status: string };
   permissions: string[];
   menus: { title: string; path: string; sort: number; permission_code: string }[];
+  nav: { id: number; label: string; items: { id: string; title: string; url: string }[] }[];
   disabled: boolean;
 };
 

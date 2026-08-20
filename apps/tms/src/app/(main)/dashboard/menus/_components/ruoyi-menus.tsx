@@ -135,6 +135,17 @@ export function RuoyiMenus({ tree, rows }: { tree: MenuNode[]; rows: MenuRow[] }
     await reload();
   }
 
+  async function removeMenu(row: MenuRow) {
+    if (!window.confirm(`删除菜单 ${row.menu_name}？`)) return;
+    const res = await fetch(`/api/system/menus/${row.menu_id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const json = await res.json();
+      window.alert(json.detail ?? "删除失败");
+      return;
+    }
+    await reload();
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -210,6 +221,11 @@ export function RuoyiMenus({ tree, rows }: { tree: MenuNode[]; rows: MenuRow[] }
                     {can("system:menu:edit") ? (
                       <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
                         修改
+                      </Button>
+                    ) : null}
+                    {can("system:menu:remove") ? (
+                      <Button variant="ghost" size="sm" onClick={() => void removeMenu(row)}>
+                        删除
                       </Button>
                     ) : null}
                   </TableCell>
@@ -303,9 +319,11 @@ export function RuoyiMenus({ tree, rows }: { tree: MenuNode[]; rows: MenuRow[] }
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 取消
               </Button>
-              <Button type="submit" disabled={saving}>
-                保存
-              </Button>
+              {can(editing ? "system:menu:edit" : "system:menu:add") ? (
+                <Button type="submit" disabled={saving}>
+                  保存
+                </Button>
+              ) : null}
             </DialogFooter>
           </form>
         </DialogContent>

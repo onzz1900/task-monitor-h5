@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCan } from "@/lib/session-context";
 import { COLUMN_TO_STATUS, toKanbanBoard } from "@/lib/tms-map";
 import type { Task as DomainTask } from "@/lib/types";
 
@@ -72,6 +73,7 @@ function isTaskDragData(value: unknown): value is TaskDragData {
 }
 
 export function Kanban({ initialBoard }: KanbanProps) {
+  const can = useCan();
   const [board, setBoard] = React.useState<BoardState>(initialBoard);
   const [columnOrder, setColumnOrder] = React.useState<ColumnId[]>(columnIds);
   const boardBeforeDrag = React.useRef<BoardState>(initialBoard);
@@ -176,34 +178,36 @@ export function Kanban({ initialBoard }: KanbanProps) {
             <ArrowUpDown data-icon="inline-start" />
             Sort
           </Button>
-          <ButtonGroup className="w-full sm:w-fit">
-            <Button className="flex-1 sm:flex-none">
-              <Plus data-icon="inline-start" />
-              Add task
-            </Button>
-            <ButtonGroupSeparator />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button aria-label="Open add task menu">
-                  <ChevronDown />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem>
-                  <Upload />
-                  Import CSV
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <LayoutTemplate />
-                  Add from template
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Bot />
-                  Create automation
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </ButtonGroup>
+          {can("task:create") ? (
+            <ButtonGroup className="w-full sm:w-fit">
+              <Button className="flex-1 sm:flex-none">
+                <Plus data-icon="inline-start" />
+                Add task
+              </Button>
+              <ButtonGroupSeparator />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button aria-label="Open add task menu">
+                    <ChevronDown />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem>
+                    <Upload />
+                    Import CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <LayoutTemplate />
+                    Add from template
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Bot />
+                    Create automation
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </ButtonGroup>
+          ) : null}
         </div>
       </div>
 
