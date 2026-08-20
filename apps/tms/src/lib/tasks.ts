@@ -1,8 +1,9 @@
 /** 任务领域逻辑：校验、序列化、模拟运行、备份裁剪。 */
-import { db } from "./db";
+import { asCount, execute, query, queryOne, sqlLimit } from "./db";
 import { SECRET_REFS, STATUSES, TASK_TYPES } from "./meta";
-import { computeNextRun, isValidCron } from "./schedule";
 import { ApiError } from "./rbac";
+import { computeNextRun, isValidCron } from "./schedule";
+import { isTargetKind, listLookups } from "./task-lookups";
 
 export type TaskInput = {
   title: string;
@@ -22,6 +23,10 @@ export type TaskInput = {
   callback_secret_ref?: string | null;
   keep_runs?: number;
   status?: string;
+  target_kind?: string;
+  target_code?: string;
+  multi_shop?: boolean | number | string;
+  remark?: string;
 };
 
 export type TaskRow = Record<string, unknown> & { id: number };
@@ -31,11 +36,23 @@ function num(v: unknown, fallback: number): number {
   return Number.isFinite(n) ? Math.round(n) : fallback;
 }
 
-export function normalizeInput(body: TaskInput): TaskInput {
+export async function normalizeInput(body: TaskInput): Promise<TaskInput> {
+  const targetKind = String(body.target_kind ?? "other").trim();
+  if (!isTargetKind(targetKind)) throw new ApiError(400, "类型必须是平台、业务系统或其他");
+  const targetCode = String(body.target_code ?? "").trim();
+  const type = String(body.type ?? "review");
+  if (!(type in TASK_TYPES)) throw new ApiError(400, "任务类型无效");
+  if (targetKind === "platform" || targetKind === "business") {
+    const options = await listLookups(targetKind);
+    if (!targetCode || !options.some((row) => row.code === targetCode)) {
+      throw new ApiError(400, targetKind === "platform" ? "请选择平台" : "请选择业务系统");
+    }
+  }
+  const multiShop = body.multi_shop === true || body.multi_shop === 1 || body.multi_shop === "1";
   const t: TaskInput = {
     title: String(body.title ?? "").trim(),
     description: String(body.description ?? ""),
-    type: String(body.type ?? "review"),
+    type,
     owner_name: String(body.owner_name ?? ""),
     channel: String(body.channel ?? ""),
     points_done: num(body.points_done, 0),
@@ -49,11 +66,14 @@ export function normalizeInput(body: TaskInput): TaskInput {
     callback_retries: num(body.callback_retries, 3),
     callback_secret_ref: body.callback_secret_ref ? String(body.callback_secret_ref) : null,
     keep_runs: num(body.keep_runs, 10),
-    status: body.status ? String(body.status) : undefined,
+    status: String(body.status ?? "待流转"),
+    target_kind: targetKind,
+    target_code: targetKind === "other" ? "" : targetCode,
+    multi_shop: multiShop,
+    remark: String(body.remark ?? ""),
   };
 
   if (!t.title) throw new ApiError(400, "请填写任务名称");
-  if (!(t.type! in TASK_TYPES)) throw new ApiError(400, "任务类型无效");
   if (t.schedule_kind === "cron") {
     if (!t.cron_expr || !isValidCron(t.cron_expr)) throw new ApiError(400, "cron 表达式无效");
   } else if (t.schedule_kind === "interval") {
@@ -76,35 +96,39 @@ export function normalizeInput(body: TaskInput): TaskInput {
   if (t.points_done! < 0 || t.points_done! > t.points_total!) {
     throw new ApiError(400, "已完成点位需在 0 与总点位之间");
   }
-  if (t.status && !STATUSES.includes(t.status as (typeof STATUSES)[number])) {
+  if (!t.status || !STATUSES.includes(t.status as (typeof STATUSES)[number])) {
     throw new ApiError(400, "状态无效");
   }
   return t;
 }
 
-export function serializeTask(row: TaskRow, withRuns = false) {
-  const runs = db()
-    .prepare(
-      "SELECT id, ran_at, ok, result_text, duration_ms FROM task_runs WHERE task_id = ? ORDER BY ran_at DESC LIMIT ?"
-    )
-    .all(row.id, withRuns ? 100 : 1) as Record<string, unknown>[];
+export async function serializeTask(row: TaskRow, withRuns = false) {
+  const runLimit = sqlLimit(withRuns ? 100 : 1, 1, 100);
+  const runs = await query<Record<string, unknown>>(
+    `SELECT id, ran_at, ok, result_text, duration_ms FROM task_runs WHERE task_id = ? ORDER BY ran_at DESC LIMIT ${runLimit}`,
+    [row.id],
+  );
   const toRun = (r: Record<string, unknown>) => ({ ...r, ok: Boolean(r.ok) });
   return {
     ...row,
+    target_kind: String(row.target_kind ?? "other"),
+    target_code: String(row.target_code ?? ""),
+    multi_shop: Boolean(Number(row.multi_shop ?? 0)),
+    remark: String(row.remark ?? ""),
     last_run: runs.length ? toRun(runs[0]) : null,
     ...(withRuns ? { runs: runs.map(toRun) } : {}),
   };
 }
 
-export function getTask(id: number): TaskRow {
-  const row = db().prepare("SELECT * FROM tasks WHERE id = ?").get(id) as TaskRow | undefined;
+export async function getTask(id: number): Promise<TaskRow> {
+  const row = await queryOne<TaskRow>("SELECT * FROM tasks WHERE id = ?", [id]);
   if (!row) throw new ApiError(404, "任务不存在");
   return row;
 }
 
-export function nextTaskCode(): string {
-  const { n } = db().prepare("SELECT COUNT(*) AS n FROM tasks").get() as { n: number };
-  return `FL-${3100 + n}`;
+export async function nextTaskCode(): Promise<string> {
+  const row = await queryOne<{ n: number }>("SELECT COUNT(*) AS n FROM tasks");
+  return `FL-${3100 + asCount(row?.n)}`;
 }
 
 function randInt(min: number, max: number): number {
@@ -134,15 +158,18 @@ export function mockRunResult(task: TaskRow): { ok: boolean; text: string } {
 }
 
 /** 运行一次（模拟结果入库），并把备份裁剪到最近 keep_runs 次。 */
-export function runTask(id: number): TaskRow {
-  const d = db();
-  const task = getTask(id);
+export async function runTask(id: number): Promise<TaskRow> {
+  const task = await getTask(id);
   const now = new Date();
   const { ok, text } = mockRunResult(task);
 
-  d.prepare(
-    "INSERT INTO task_runs (task_id, ran_at, ok, result_text, duration_ms) VALUES (?, ?, ?, ?, ?)"
-  ).run(id, now.toISOString(), ok ? 1 : 0, text, randInt(5000, 90000));
+  await execute("INSERT INTO task_runs (task_id, ran_at, ok, result_text, duration_ms) VALUES (?, ?, ?, ?, ?)", [
+    id,
+    now.toISOString(),
+    ok ? 1 : 0,
+    text,
+    randInt(5000, 90000),
+  ]);
 
   let pointsDone = task.points_done as number;
   const total = task.points_total as number;
@@ -157,17 +184,25 @@ export function runTask(id: number): TaskRow {
     task.schedule_kind as string,
     task.cron_expr as string | null,
     task.interval_minutes as number | null,
-    now
+    now,
   );
-  d.prepare(
-    "UPDATE tasks SET points_done = ?, status = ?, next_run_at = ?, updated_at = ? WHERE id = ?"
-  ).run(pointsDone, status, nextRun, now.toISOString(), id);
+  await execute("UPDATE tasks SET points_done = ?, status = ?, next_run_at = ?, updated_at = ? WHERE id = ?", [
+    pointsDone,
+    status,
+    nextRun,
+    now.toISOString(),
+    id,
+  ]);
 
-  d.prepare(
+  const keep = sqlLimit(task.keep_runs, 10, 100);
+  await execute(
     `DELETE FROM task_runs WHERE task_id = ? AND id NOT IN (
-       SELECT id FROM task_runs WHERE task_id = ? ORDER BY ran_at DESC LIMIT ?
-     )`
-  ).run(id, id, task.keep_runs as number);
+       SELECT id FROM (
+         SELECT id FROM task_runs WHERE task_id = ? ORDER BY ran_at DESC LIMIT ${keep}
+       ) kept
+     )`,
+    [id, id],
+  );
 
   return getTask(id);
 }

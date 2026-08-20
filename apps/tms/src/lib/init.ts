@@ -3,9 +3,12 @@
  * 每个 Route Handler 入口 await ensureReady() 即可，幂等且只执行一次。
  */
 import { getMigrations } from "better-auth/db/migration";
+
 import { auth } from "./auth";
-import { createDomainTables, db } from "./db";
+import { asCount, createDomainTables, execute, queryOne, waitForMysql } from "./db";
+import { ensureOfficialFButtons, seedRuoyi } from "./ruoyi-seed";
 import { computeNextRun } from "./schedule";
+import { ensureTaskCaptainSchema } from "./task-lookups";
 
 const PERMISSIONS: [string, string][] = [
   ["task:read", "查看任务"],
@@ -24,9 +27,9 @@ const ROLES: [string, string, string, string[]][] = [
 ];
 
 const MENUS: [string, string, number, string][] = [
-  ["任务管理", "/tasks", 1, "task:read"],
-  ["用户管理", "/users", 2, "user:read"],
-  ["角色权限", "/roles", 3, "role:read"],
+  ["任务管理", "/dashboard/tasks", 1, "task:read"],
+  ["用户管理", "/dashboard/users", 2, "user:read"],
+  ["角色权限", "/dashboard/roles", 3, "role:read"],
 ];
 
 const USERS: [string, string, string, string][] = [
@@ -134,92 +137,110 @@ const TASKS: (Record<string, unknown> & { run: SeedRun })[] = [
   },
 ];
 
-function seedDomain(): void {
-  const d = db();
+async function seedDomain(): Promise<void> {
   const now = new Date().toISOString();
 
-  const permStmt = d.prepare("INSERT INTO permissions (code, name) VALUES (?, ?)");
-  for (const [code, name] of PERMISSIONS) permStmt.run(code, name);
-
-  const roleStmt = d.prepare("INSERT INTO roles (code, name, description) VALUES (?, ?, ?)");
-  const rpStmt = d.prepare(
-    `INSERT INTO role_permissions (role_id, permission_id)
-     SELECT r.id, p.id FROM roles r, permissions p WHERE r.code = ? AND p.code = ?`
-  );
-  for (const [code, name, desc, permCodes] of ROLES) {
-    roleStmt.run(code, name, desc);
-    for (const pc of permCodes) rpStmt.run(code, pc);
+  for (const [code, name] of PERMISSIONS) {
+    await execute("INSERT INTO permissions (code, name) VALUES (?, ?)", [code, name]);
   }
 
-  const menuStmt = d.prepare(
-    "INSERT INTO menus (title, path, sort, permission_code) VALUES (?, ?, ?, ?)"
-  );
-  for (const [title, path, sort, perm] of MENUS) menuStmt.run(title, path, sort, perm);
+  for (const [code, name, desc, permCodes] of ROLES) {
+    await execute("INSERT INTO roles (code, name, description) VALUES (?, ?, ?)", [code, name, desc]);
+    for (const pc of permCodes) {
+      await execute(
+        `INSERT INTO role_permissions (role_id, permission_id)
+         SELECT r.id, p.id FROM roles r, permissions p WHERE r.code = ? AND p.code = ?`,
+        [code, pc],
+      );
+    }
+  }
 
-  const taskCols = [
-    "code", "title", "description", "type", "status", "owner_name", "channel",
-    "points_done", "points_total", "points_note", "schedule_kind", "cron_expr",
-    "interval_minutes", "callback_url", "callback_secret_ref", "next_run_at",
-    "created_at", "updated_at",
-  ];
-  const taskStmt = d.prepare(
-    `INSERT INTO tasks (${taskCols.join(", ")}) VALUES (${taskCols.map(() => "?").join(", ")})`
-  );
-  const runStmt = d.prepare(
-    "INSERT INTO task_runs (task_id, ran_at, ok, result_text, duration_ms) VALUES (?, ?, ?, ?, ?)"
-  );
+  for (const [title, path, sort, perm] of MENUS) {
+    await execute("INSERT INTO menus (title, path, sort, permission_code) VALUES (?, ?, ?, ?)", [
+      title,
+      path,
+      sort,
+      perm,
+    ]);
+  }
 
   for (const spec of TASKS) {
     const { run, ...t } = spec;
     const nextRun = computeNextRun(
       t.schedule_kind as string,
-      (t.cron_expr as string) ?? null,
-      (t.interval_minutes as number) ?? null
+      typeof t.cron_expr === "string" ? t.cron_expr : null,
+      typeof t.interval_minutes === "number" ? t.interval_minutes : null,
     );
-    const info = taskStmt.run(
-      t.code, t.title, t.description ?? "", t.type, t.status, t.owner_name ?? "",
-      t.channel ?? "", t.points_done ?? 0, t.points_total ?? 1, t.points_note ?? "",
-      t.schedule_kind, t.cron_expr ?? null, t.interval_minutes ?? null,
-      t.callback_url ?? null, t.callback_secret_ref ?? null, nextRun, now, now
+    const info = await execute(
+      `INSERT INTO tasks (
+         code, title, description, type, status, owner_name, channel,
+         points_done, points_total, points_note, schedule_kind, cron_expr,
+         interval_minutes, callback_url, callback_secret_ref, next_run_at,
+         created_at, updated_at
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        t.code,
+        t.title,
+        t.description ?? "",
+        t.type,
+        t.status,
+        t.owner_name ?? "",
+        t.channel ?? "",
+        t.points_done ?? 0,
+        t.points_total ?? 1,
+        t.points_note ?? "",
+        t.schedule_kind,
+        t.cron_expr ?? null,
+        t.interval_minutes ?? null,
+        t.callback_url ?? null,
+        t.callback_secret_ref ?? null,
+        nextRun,
+        now,
+        now,
+      ],
     );
-    runStmt.run(
-      info.lastInsertRowid,
+    await execute("INSERT INTO task_runs (task_id, ran_at, ok, result_text, duration_ms) VALUES (?, ?, ?, ?, ?)", [
+      info.insertId,
       new Date(Date.now() - run.minutesAgo * 60_000).toISOString(),
       run.ok,
       run.text,
-      run.duration
-    );
+      run.duration,
+    ]);
   }
 }
 
 async function seedUsers(): Promise<void> {
-  const d = db();
   for (const [email, password, name, role] of USERS) {
-    // 注册流程（含密码哈希）交给 Better Auth；role 字段注册后由服务端直接落库
-    await auth.api.signUpEmail({ body: { email, password, name } });
-    d.prepare("UPDATE user SET role = ? WHERE email = ?").run(role, email);
+    const exists = await queryOne<{ id: string }>("SELECT id FROM `user` WHERE email = ?", [email]);
+    if (!exists) {
+      await auth.api.signUpEmail({ body: { email, password, name } });
+    }
+    await execute("UPDATE `user` SET role = ? WHERE email = ?", [role, email]);
   }
 }
 
 let readyPromise: Promise<void> | null = null;
 
 export function ensureReady(): Promise<void> {
-  if (!readyPromise) {
-    readyPromise = (async () => {
-      const { runMigrations } = await getMigrations(auth.options);
-      await runMigrations();
-      createDomainTables();
-      const seeded = db()
-        .prepare("SELECT COUNT(*) AS n FROM roles")
-        .get() as { n: number };
-      if (seeded.n === 0) {
-        seedDomain();
-        await seedUsers();
-      }
-    })().catch((err) => {
-      readyPromise = null; // 失败不缓存，允许下次请求重试
-      throw err;
-    });
-  }
+  readyPromise ??= (async () => {
+    await waitForMysql();
+    const { runMigrations } = await getMigrations(auth.options);
+    await runMigrations();
+    await createDomainTables();
+    const seeded = await queryOne<{ n: number }>("SELECT COUNT(*) AS n FROM roles");
+    if (asCount(seeded?.n) === 0) {
+      await seedDomain();
+    }
+    await seedUsers();
+    const ruoyi = await queryOne<{ n: number }>("SELECT COUNT(*) AS n FROM sys_role");
+    if (asCount(ruoyi?.n) === 0) {
+      await seedRuoyi();
+    }
+    await ensureOfficialFButtons();
+    await ensureTaskCaptainSchema();
+  })().catch((err) => {
+    readyPromise = null; // 失败不缓存，允许下次请求重试
+    throw err;
+  });
   return readyPromise;
 }

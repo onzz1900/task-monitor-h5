@@ -1,71 +1,111 @@
-# 任务流转中心 · 任务管理系统（TMS）
+# 任务管理系统（TMS）
 
-「任务流转中心 / Mission Transfer Center」的任务管理系统首个版本：登录、菜单与权限、用户与角色、任务的登记 / 修改 / 运行，调度（cron / 固定间隔，Asia/Shanghai）与回调（secretRef）为一级表单区块，每个任务备份最近 N 次运行结果（默认 10）。
+Studio Admin 官方模板为壳，本仓库业务（Better Auth + 本地 MySQL + Route Handlers）接在上面。
 
-- 前端：Next.js App Router + React + TypeScript + Tailwind CSS + shadcn/ui
-- 后端：Next.js Route Handlers（本应用即系统记录源），数据存 SQLite 文件（`data/tms.db`，首次启动自动建表 + 写入演示数据）
-- 认证：[Better Auth](https://www.better-auth.com/)（邮箱 + 密码，密码哈希与会话由库处理），RBAC 用角色 / 权限表实现
-- 视觉：默认**纸票版**皮肤（纸面 / 票据 / 衬线标题），顶栏可切换**控制台版**深色皮肤；`variants/` 下的静态原型保持原样作为存档
+底模：[arhamkhnz/next-shadcn-admin-dashboard](https://github.com/arhamkhnz/next-shadcn-admin-dashboard)（Next.js 16 + TypeScript + Tailwind v4 + shadcn）。对照官方演示：[next-shadcn-admin-dashboard.vercel.app](https://next-shadcn-admin-dashboard.vercel.app)。
 
-只需一个进程。不要再启动 FastAPI / `:8000`。
+不要再启动 FastAPI / `:8000`。Next 一个进程；MySQL 用本目录的 Docker Compose。
 
 ## 启动
 
+### 1. 本地 MySQL
+
+在 `apps/tms` 里起官方演示库（库名 / 账号见 [`.env.example`](.env.example)，与 `docker-compose.yml` 一致）：
+
 ```bash
 cd apps/tms
+cp .env.example .env
 npm install
+docker compose up -d
+# 或：npm run mysql:up
+```
+
+Compose 会拉起本机 `localhost:3306` 的 MySQL，并跑 `npm run db:setup`（Better Auth 建表 + 业务表 + 演示种子）。
+
+### 2. TMS 怎么连上
+
+`src/lib/db.ts` 读环境变量 `DATABASE_URL`。未设置时默认就是这份本地 Compose MySQL。复制 `.env.example` 即可，不必再配远程库。
+
+查询走 mysql2 的 `execute`（二进制预处理）。MySQL 8.x 对预处理语句里的 `LIMIT ?` / `OFFSET ?` 会报 `Incorrect arguments to mysqld_stmt_execute`，所以条数用 `sqlLimit()` 夹成整数后写进 SQL，不作为绑定参数。
+
+### 3. 跑应用
+
+```bash
 npm run dev
 ```
 
-打开 <http://localhost:3000> 即到登录页。
+打开 <http://localhost:3000>（官方 Login v1）。未登录访问 `/dashboard/*` 会回到登录页。
 
-可选环境变量（不设也能跑演示）：
-
-| 变量 | 默认 | 说明 |
-| --- | --- | --- |
-| `BETTER_AUTH_SECRET` | 内置演示密钥 | 生产环境务必替换 |
-| `BETTER_AUTH_URL` | `http://localhost:3000` | 本应用对外地址 |
-| `TMS_DB_FILE` | `apps/tms/data/tms.db` | SQLite 文件路径 |
+| 变量 | 说明 |
+| --- | --- |
+| `DATABASE_URL` | 本地 MySQL 连接串，默认见 `.env.example` |
+| `BETTER_AUTH_SECRET` | 未设则用内置演示密钥 |
+| `BETTER_AUTH_URL` | 默认 `http://localhost:3000` |
 
 ## 演示账号
 
-| 角色 | 邮箱 | 密码 | 能做什么 |
-| --- | --- | --- | --- |
-| 管理员 | `admin@tms.local` | `admin123` | 全部：任务增改运行、用户、角色 |
-| 值班 | `duty@tms.local` | `duty123` | 任务的查看、登记、修改、运行 |
-| 只读 | `readonly@tms.local` | `read123` | 仅查看任务（不能登记 / 修改 / 运行） |
-
-菜单按权限过滤：只读账号看不到「用户管理」「角色权限」，任务页也没有登记 / 运行按钮；接口侧同样校验（403）。
-
-## 数据模型
-
-SQLite 表结构只用 `INTEGER` / `TEXT` 等可移植类型，可平移到 Postgres。Better Auth 自建 `user` / `session` / `account` / `verification` 表；业务表如下：
-
-| 表 | 字段（主干） | 说明 |
+| 角色 | 邮箱 | 密码 |
 | --- | --- | --- |
-| `roles` | `id, code, name, description` | 角色：`admin` 管理员 / `duty` 值班 / `readonly` 只读 |
-| `permissions` | `id, code, name` | 权限点：`task:read / task:create / task:update / task:run / user:read / user:manage / role:read` |
-| `role_permissions` | `role_id, permission_id` | 角色 ↔ 权限多对多 |
-| `menus` | `id, title, path, sort, permission_code` | 菜单项；无对应权限的角色不可见 |
-| `user`（Better Auth） | `… + role` | 附加 `role` 字段存角色 code |
-| `tasks` | `id, code, title, description, type, status, owner_name, channel` | 任务主体；`type` ∈ 评价/聊天/绘图/转化率/监控/报表 |
-| | `points_done, points_total, points_note` | 点位进度（如 12/20） |
-| | `schedule_kind, cron_expr, interval_minutes, timezone, next_run_at` | 调度：cron 或固定间隔，固定 `Asia/Shanghai`；`next_run_at` 即「下次流转」，由 cron/间隔推导 |
-| | `callback_url, callback_timeout_ms, callback_retries, callback_secret_ref` | 可选 POST 回调；只存 **secretRef** 引用名，密钥本体在服务端密管，永不下发 |
-| | `keep_runs` | 运行结果备份份数（默认 10） |
-| `task_runs` | `id, task_id, ran_at, ok, result_text, duration_ms` | 运行记录；每次运行后裁剪到最近 `keep_runs` 条 |
+| 管理员 | `admin@tms.local` | `admin123` |
+| 值班 | `duty@tms.local` | `duty123` |
+| 只读 | `readonly@tms.local` | `read123` |
 
-「运行一次」当前为模拟执行：随机成功 / 失败并生成带具体数字的结果文案，推进点位、写入运行记录、按调度推导下一次流转时间。
+登录后业务页：`/dashboard/tasks`、`/dashboard/users`、`/dashboard/roles`、`/dashboard/menus`。侧栏 / 顶栏 / 主题仍是模板自带导航（与官方 demo 同一套）。非超管侧栏改为按 `sys_menu`（M 目录 / C 菜单）+ `sys_role_menu` 动态组装，不再用 URL 白名单裁官方列表；超管 `perms=["*"]` 仍看完整模板导航（CRM 等仅超管）。按钮（新增 / 修改 / 删除 / 保存 / 导入 / 导出）缺对应 F 则不渲染。`npm run test:perms` 覆盖写接口 200/201、缺权 403、无 cookie 401。
 
-## 接口一览
+## 若依 RBAC（对照官方 SQL）
 
-| 方法 | 路径 | 权限 |
-| --- | --- | --- |
-| POST | `/api/auth/sign-in/email` 等 | Better Auth 托管 |
-| GET | `/api/bootstrap` | 登录即可（返回用户 + 权限 + 可见菜单） |
-| GET | `/api/meta` | `task:read` |
-| GET / POST | `/api/tasks` | `task:read` / `task:create` |
-| GET / PUT | `/api/tasks/:id` | `task:read` / `task:update` |
-| POST | `/api/tasks/:id/run` | `task:run` |
-| GET | `/api/users`，PATCH `/api/users/:id` | `user:read` / `user:manage` |
-| GET | `/api/roles` | `role:read` |
+用户 / 角色 / 菜单 / 部门表按官方 RuoYi-Vue 字段实现，**没有**自造业务列，也没有 RuoYi-Vue-Plus 租户列。对照源：
+
+[yangzongzhuan/RuoYi-Vue](https://github.com/yangzongzhuan/RuoYi-Vue) `sql/ry_20260417.sql`（与 gitee `y_project/RuoYi-Vue` 同源）。
+
+对照并落地的表：
+
+| 表 | 用途 |
+| --- | --- |
+| `sys_user` | 用户（`user_name` / `nick_name` / `email` / `phonenumber` / `sex` / `status` / `dept_id` / `remark` / `create_time`） |
+| `sys_role` | 角色（`role_name` / `role_key` / `role_sort` / `status`） |
+| `sys_menu` | 菜单（`menu_name` / `path` / `menu_type` / `perms` / `order_num` / `visible`） |
+| `sys_dept` | 部门（用户表 `dept_id` 需要） |
+| `sys_user_role` | 用户–角色 |
+| `sys_role_menu` | 角色–菜单（授权树） |
+
+登录仍走 Better Auth（`user` / `session` 等表）。`sys_*` 是 RBAC 真源：按邮箱对齐 `sys_user`，`role_key = admin` 为超级管理员（`perms=["*"]`，菜单树勾选不能关掉超管）。`sys_user.password` 保持官方列，哈希不写在该列（由 Better Auth 保管）。
+
+每次请求从库重读 `sys_user_role` / `sys_role_menu` / `sys_user.status`（布局 `force-dynamic`）。非超管侧栏从 `sys_menu` 树构建：`menu_type` M 为分组、C 为子项（`visible=0` `status=0`，且在当前角色 `sys_role_menu` 中、具备该 C 的 `perms`）。C.path / component 映射到现有路由（`user`→`/dashboard/users`，`role`→`/dashboard/roles`，`menu`→`/dashboard/menus`，任务列表→`/dashboard/tasks`）；有 `task:read` 时同组保留 `/dashboard/kanban`。缺 C 权限的项不进侧栏；硬打 URL 仍 `/unauthorized`。超管保持官方 `sidebarItems` 全量。模板演示页（CRM、财务等）仅超管可见。按钮级 F 隐藏：`system:user:{add,edit,remove,export,import}`、`system:role:{add,edit,remove,export}`、`system:menu:{add,edit,remove}`、看板 Add task / Import CSV 需 `task:create`。写/删/导入/导出 Route Handler 一律 `requirePermission`（401 / 403）。直打 `/dashboard/users|roles|menus` 缺 `system:*:list` 会到 `/unauthorized`。未登录访问 `/dashboard/*` 回 Login v1。`sys_user.status=1`（停用）下一请求起 API/页不可用。登出走 Better Auth `signOut`。
+
+`/dashboard/kanban` 用官方模板看板壳，卡片来自同一张 `tasks` 表。展示：待流转→planned，运行中→building，已阻塞→qa，本轮已完成→shipped，未知状态只出现在 ideas。拖列只写 `meta.ts` 的四个中文状态（ideas/planned 都写 待流转，building→运行中，qa→已阻塞，shipped→本轮已完成），从不把英文列名写入 MySQL。失败则回弹。`/dashboard/tasks` 表格仍在。列表「Add task」进 `/dashboard/tasks/new`（需 `task:create`）；看板 Add task / 列上 + 打开同一张 `TaskForm`，`POST /api/tasks` 落库。
+
+登记 / 修改表单的船长 8 项：名称、描述、类型（平台 / 业务系统 / 其他）、级联目标、是否多店铺、cron 调度、状态、备注。平台与业务系统选项在 `task_lookups`（`db:setup` / `ensureReady` 会给已有库加列并种子）。`tasks.type` 仍是评价采集等种类，`mockRunResult` 不改。新列：`target_kind` / `target_code` / `multi_shop` / `remark`。
+
+## 保留的模板 chrome 文件（未重画）
+
+这些文件来自官方模板，只做登录提交 / 登出 / 会话守卫等接线，不改颜色、字体、间距、导航结构：
+
+| 用途 | 路径 |
+| --- | --- |
+| 根布局 + 主题启动 | `src/app/layout.tsx` |
+| CSS 变量 / Tailwind | `src/app/globals.css` |
+| 主题预设 | `src/styles/presets/*.css` |
+| Theme boot | `src/scripts/theme-boot.tsx` |
+| Preferences / theme store | `src/stores/preferences/*`、`src/lib/preferences/*` |
+| Dashboard 布局（侧栏 + 顶栏） | `src/app/(main)/dashboard/layout.tsx` |
+| App sidebar | `src/app/(main)/dashboard/_components/sidebar/app-sidebar.tsx` |
+| Nav main / user / support | `src/app/(main)/dashboard/_components/sidebar/nav-main.tsx`、`nav-user.tsx`、`support-card.tsx` |
+| Sidebar 数据 | `src/navigation/sidebar/sidebar-items.ts` |
+| 顶栏：搜索 / 布局 / 主题 / GitHub / 账号 | `src/app/(main)/dashboard/_components/header/*` |
+| shadcn sidebar 原语 | `src/components/ui/sidebar.tsx` |
+| Login v1 壳 | `src/app/(main)/auth/v1/login/page.tsx` |
+| Login 表单 | `src/app/(main)/auth/_components/login-form.tsx` |
+| 应用名 / meta | `src/config/app-config.ts` |
+| Tasks 表格 UI | `src/app/(main)/dashboard/tasks/_components/tasks.tsx`、`columns.tsx`、`tasks-toolbar.tsx` |
+| Kanban 看板 UI | `src/app/(main)/dashboard/kanban/_components/kanban.tsx`、`kanban-column.tsx`、`task-card.tsx` |
+| Users / Roles 表格 UI | `src/app/(main)/dashboard/users/_components/*`、`roles/_components/*` |
+
+## 接到模板上的业务
+
+- Better Auth：`src/lib/auth.ts`、`src/app/api/auth/[...all]/route.ts`
+- 本地 MySQL + 种子（管理员 / 值班 / 只读）：`src/lib/db.ts`、`src/lib/init.ts`、`docker-compose.yml`
+- Route Handlers：`src/app/api/tasks`、`/api/system/{users,roles,menus,depts}`、`meta`、`bootstrap`。旧的 `PATCH /api/users/[id]`（写 Better Auth `user.role` / `roles` 表）已删除，改角色只走 `PUT /api/system/users/:id` → `sys_user` / `sys_user_role`。
+- 用户 / 角色 / 菜单页用模板 Table + Dialog + Field + Checkbox 树，数据来自 `sys_*`
+
+纸票版 / 控制台版只在仓库 `variants/` 存档，不参与 TMS 默认界面。

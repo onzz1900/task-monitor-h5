@@ -1,28 +1,32 @@
 "use client";
 
-/** 登记 / 修改任务的表单。调度与回调是一级区块。 */
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+
+/** Shared create/edit form for list pages and Kanban. */
+import { useRouter } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/client";
+import { useCan } from "@/lib/session-context";
 import type { Meta, Task } from "@/lib/types";
+
+type TargetKind = "platform" | "business" | "other";
 
 type FormState = {
   title: string;
   description: string;
+  target_kind: TargetKind;
+  target_code: string;
   type: string;
-  status?: string;
+  multi_shop: boolean;
+  status: string;
+  remark: string;
   owner_name: string;
   channel: string;
   points_done: number;
@@ -39,12 +43,17 @@ type FormState = {
   keep_runs: number;
 };
 
-function fromTask(task?: Task): FormState {
+function fromTask(task?: Task, defaultStatus = "待流转"): FormState {
+  const kind = (task?.target_kind as TargetKind | undefined) ?? "other";
   return {
     title: task?.title ?? "",
     description: task?.description ?? "",
+    target_kind: kind,
+    target_code: task?.target_code ?? "",
     type: task?.type ?? "review",
-    status: task?.status,
+    multi_shop: Boolean(task?.multi_shop),
+    status: task?.status ?? defaultStatus,
+    remark: task?.remark ?? "",
     owner_name: task?.owner_name ?? "",
     channel: task?.channel ?? "",
     points_done: task?.points_done ?? 0,
@@ -62,29 +71,47 @@ function fromTask(task?: Task): FormState {
   };
 }
 
-export function TaskForm({ task }: { task?: Task }) {
+export function TaskForm({
+  task,
+  defaultStatus = "待流转",
+  onSaved,
+  onCancel,
+}: {
+  task?: Task;
+  defaultStatus?: string;
+  onSaved?: (saved: Task) => void;
+  onCancel?: () => void;
+}) {
   const router = useRouter();
+  const can = useCan();
   const [meta, setMeta] = useState<Meta | null>(null);
-  const [form, setForm] = useState<FormState>(() => fromTask(task));
+  const [form, setForm] = useState<FormState>(() => fromTask(task, defaultStatus));
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const canSave = task ? can("task:update") : can("task:create");
 
   useEffect(() => {
-    api<Meta>("/api/meta").then(setMeta).catch((err) => setError(err.message));
+    api<Meta>("/api/meta")
+      .then(setMeta)
+      .catch((err) => setError(err.message));
   }, []);
 
-  const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
-    setForm((f) => ({ ...f, [key]: value }));
+  const set = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm((f) => ({ ...f, [key]: value }));
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canSave) return;
     setBusy(true);
     setError(null);
     const payload = {
       title: form.title,
       description: form.description,
-      type: form.type,
-      ...(task ? { status: form.status } : {}),
+      type: form.target_kind === "other" ? form.type : form.type || "review",
+      status: form.status,
+      target_kind: form.target_kind,
+      target_code: form.target_kind === "other" ? "" : form.target_code,
+      multi_shop: form.multi_shop,
+      remark: form.remark,
       owner_name: form.owner_name,
       channel: form.channel,
       points_done: form.points_done,
@@ -96,15 +123,19 @@ export function TaskForm({ task }: { task?: Task }) {
       callback_url: form.callback_enabled ? form.callback_url : null,
       callback_timeout_ms: form.callback_timeout_ms,
       callback_retries: form.callback_retries,
-      callback_secret_ref:
-        form.callback_enabled && form.callback_secret_ref ? form.callback_secret_ref : null,
+      callback_secret_ref: form.callback_enabled && form.callback_secret_ref ? form.callback_secret_ref : null,
       keep_runs: form.keep_runs,
     };
     try {
       const saved = task
         ? await api<Task>(`/api/tasks/${task.id}`, { method: "PUT", body: JSON.stringify(payload) })
         : await api<Task>("/api/tasks", { method: "POST", body: JSON.stringify(payload) });
-      router.push(`/tasks/${saved.id}`);
+      if (onSaved) {
+        onSaved(saved);
+        setBusy(false);
+        return;
+      }
+      router.push(`/dashboard/tasks/${saved.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "保存失败");
       setBusy(false);
@@ -113,25 +144,45 @@ export function TaskForm({ task }: { task?: Task }) {
 
   if (!meta) return <p className="text-muted-foreground">{error ?? "载入中…"}</p>;
 
+  const cascadeOptions = form.target_kind === "platform" ? meta.platforms : meta.business_systems;
+
   return (
     <form onSubmit={submit} className="flex max-w-3xl flex-col gap-5">
       <Card>
         <CardHeader>
-          <CardTitle className="font-display">基础信息</CardTitle>
+          <CardTitle>基础信息</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-1.5 sm:col-span-2">
             <Label htmlFor="title">任务名称 *</Label>
             <Input id="title" required value={form.title} onChange={(e) => set("title", e.target.value)} />
           </div>
+          <div className="grid gap-1.5 sm:col-span-2">
+            <Label htmlFor="desc">描述</Label>
+            <Textarea
+              id="desc"
+              rows={2}
+              value={form.description}
+              onChange={(e) => set("description", e.target.value)}
+            />
+          </div>
           <div className="grid gap-1.5">
-            <Label>任务类型</Label>
-            <Select value={form.type} onValueChange={(v) => set("type", v)}>
+            <Label>类型 *</Label>
+            <Select
+              value={form.target_kind}
+              onValueChange={(v) =>
+                setForm((f) => ({
+                  ...f,
+                  target_kind: v as TargetKind,
+                  target_code: "",
+                }))
+              }
+            >
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(meta.task_types).map(([code, label]) => (
+                {Object.entries(meta.target_kinds).map(([code, label]) => (
                   <SelectItem key={code} value={code}>
                     {label}
                   </SelectItem>
@@ -139,23 +190,74 @@ export function TaskForm({ task }: { task?: Task }) {
               </SelectContent>
             </Select>
           </div>
-          {task && (
+          {form.target_kind === "other" ? (
             <div className="grid gap-1.5">
-              <Label>状态</Label>
-              <Select value={form.status} onValueChange={(v) => set("status", v)}>
+              <Label>采集 / 监控 / 报表</Label>
+              <Select value={form.type} onValueChange={(v) => set("type", v)}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {meta.statuses.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s}
+                  {Object.entries(meta.task_types).map(([code, label]) => (
+                    <SelectItem key={code} value={code}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <div className="grid gap-1.5">
+              <Label>{form.target_kind === "platform" ? "平台 *" : "业务系统 *"}</Label>
+              <Select value={form.target_code} onValueChange={(v) => set("target_code", v)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="请选择" />
+                </SelectTrigger>
+                <SelectContent>
+                  {cascadeOptions.map((row) => (
+                    <SelectItem key={row.code} value={row.code}>
+                      {row.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
           )}
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="multi_shop"
+              checked={form.multi_shop}
+              onCheckedChange={(checked) => set("multi_shop", checked === true)}
+            />
+            <Label htmlFor="multi_shop">是否多店铺</Label>
+          </div>
+          <div className="grid gap-1.5">
+            <Label>状态 *</Label>
+            <Select value={form.status} onValueChange={(v) => set("status", v)}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {meta.statuses.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-1.5 sm:col-span-2">
+            <Label htmlFor="remark">备注</Label>
+            <Textarea id="remark" rows={2} value={form.remark} onChange={(e) => set("remark", e.target.value)} />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>更多</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-1.5">
             <Label htmlFor="owner">负责人</Label>
             <Input id="owner" value={form.owner_name} onChange={(e) => set("owner_name", e.target.value)} />
@@ -167,15 +269,6 @@ export function TaskForm({ task }: { task?: Task }) {
               placeholder="如：天猫 + 京东"
               value={form.channel}
               onChange={(e) => set("channel", e.target.value)}
-            />
-          </div>
-          <div className="grid gap-1.5 sm:col-span-2">
-            <Label htmlFor="desc">描述</Label>
-            <Textarea
-              id="desc"
-              rows={2}
-              value={form.description}
-              onChange={(e) => set("description", e.target.value)}
             />
           </div>
           <div className="grid gap-1.5">
@@ -208,15 +301,12 @@ export function TaskForm({ task }: { task?: Task }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="font-display">调度（Asia/Shanghai）</CardTitle>
+          <CardTitle>调度（Asia/Shanghai）</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-1.5">
             <Label>调度方式</Label>
-            <Select
-              value={form.schedule_kind}
-              onValueChange={(v) => set("schedule_kind", v as "cron" | "interval")}
-            >
+            <Select value={form.schedule_kind} onValueChange={(v) => set("schedule_kind", v as "cron" | "interval")}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -268,7 +358,7 @@ export function TaskForm({ task }: { task?: Task }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="font-display flex items-center justify-between">
+          <CardTitle className="flex items-center justify-between">
             回调（可选）
             <label className="flex items-center gap-2 text-sm font-normal">
               <input
@@ -280,7 +370,7 @@ export function TaskForm({ task }: { task?: Task }) {
             </label>
           </CardTitle>
         </CardHeader>
-        {form.callback_enabled && (
+        {form.callback_enabled ? (
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-1.5 sm:col-span-2">
               <Label htmlFor="cb-url">POST 回调地址 *</Label>
@@ -333,20 +423,20 @@ export function TaskForm({ task }: { task?: Task }) {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                只保存引用名，密钥本体由服务端密管持有，永不下发到前端。
-              </p>
+              <p className="text-xs text-muted-foreground">只保存引用名，密钥本体由服务端密管持有，永不下发到前端。</p>
             </div>
           </CardContent>
-        )}
+        ) : null}
       </Card>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error ? <p className="text-sm text-destructive">{error}</p> : null}
       <div className="flex gap-3">
-        <Button type="submit" disabled={busy}>
-          {busy ? "保存中…" : task ? "保存修改" : "登记任务"}
-        </Button>
-        <Button type="button" variant="outline" onClick={() => router.back()}>
+        {canSave ? (
+          <Button type="submit" disabled={busy}>
+            {busy ? "保存中…" : task ? "保存修改" : "登记任务"}
+          </Button>
+        ) : null}
+        <Button type="button" variant="outline" onClick={() => (onCancel ? onCancel() : router.back())}>
           取消
         </Button>
       </div>

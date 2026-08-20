@@ -1,0 +1,3 @@
+# Same local MySQL stack as apps/tms. Prefer: cd apps/tms && docker compose up -d
+include:
+  - path: apps/tms/docker-compose.yml
