@@ -25,10 +25,7 @@ const ICON_BY_URL: Record<string, LucideIcon> = {
 
 /** Map official C.path / component onto existing Next routes. */
 export function mapSysMenuToRoute(path: string, component?: string | null): string | null {
-  const p = String(path)
-    .trim()
-    .replace(/^\/+/, "")
-    .toLowerCase();
+  const p = String(path).trim().replace(/^\/+/, "").toLowerCase();
   const c = String(component ?? "")
     .trim()
     .replace(/^\/+/, "")
